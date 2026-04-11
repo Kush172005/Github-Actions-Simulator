@@ -6,6 +6,7 @@ import {
   MetricsSceneSection,
   CtaScene,
 } from "./components/cinematic/Scenes.jsx";
+import { ShootingStars } from "./components/backgrounds/ShootingStars.jsx";
 
 function NavBar() {
   return (
@@ -22,14 +23,19 @@ function NavBar() {
         {/* Logo */}
         <a href="#" className="flex items-center gap-2.5 group">
           <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
             style={{ background: "linear-gradient(135deg, #34d399, #22d3ee)", boxShadow: "0 0 12px rgba(52,211,153,0.4)" }}
           >
             <svg className="w-4 h-4 text-zinc-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <span className="text-sm font-bold text-zinc-100 tracking-tight">ShipStack</span>
+          <div className="flex flex-col items-start leading-tight">
+            <span className="text-sm font-bold text-zinc-100 tracking-tight">ShipStack</span>
+            <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-zinc-600 group-hover:text-zinc-500 transition-colors">
+              by Kush
+            </span>
+          </div>
         </a>
 
         {/* Nav links */}
@@ -73,48 +79,90 @@ function NavBar() {
 function Footer() {
   return (
     <footer
-      className="border-t py-8 text-center font-mono text-xs text-zinc-700"
-      style={{ borderColor: "rgba(255,255,255,0.04)", background: "#09090b" }}
+      className="border-t"
+      style={{ borderColor: "rgba(255,255,255,0.06)", background: "transparent" }}
     >
-      <div className="flex items-center justify-center gap-1.5 mb-2">
-        <div
-          className="w-4 h-4 rounded flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg, #34d399, #22d3ee)" }}
-        >
-          <svg className="w-2.5 h-2.5 text-zinc-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
+      <div className="mx-auto max-w-5xl px-4 py-12 sm:py-14">
+        <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between sm:gap-12">
+          <div className="max-w-md">
+            <div className="flex items-center gap-2 mb-3">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: "linear-gradient(135deg, #34d399, #22d3ee)" }}
+              >
+                <svg className="w-4 h-4 text-zinc-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="leading-tight">
+                <p className="text-sm font-semibold text-zinc-200 tracking-tight">ShipStack</p>
+                <p className="text-[11px] text-zinc-600 font-medium tracking-wide">An independent product</p>
+              </div>
+            </div>
+            <p className="text-sm text-zinc-500 leading-relaxed">
+              Pipelines you can trace end to end—webhooks, queues, workers, and logs in one honest thread. No borrowed
+              roadmap slides; just systems that ship.
+            </p>
+          </div>
+
+          <div className="sm:text-right space-y-4 shrink-0">
+            <div className="space-y-1.5 text-xs text-zinc-500 leading-relaxed">
+              <p className="text-zinc-400 font-medium text-[13px]">Ownership</p>
+              <p>
+                ShipStack is designed, built, and operated by{" "}
+                <span className="text-zinc-300">Kush</span>.
+              </p>
+              <p className="text-zinc-600 text-[11px] pt-1">
+                © {new Date().getFullYear()} Kush. All rights reserved.
+              </p>
+            </div>
+            <p className="text-[11px] text-zinc-600 leading-snug max-w-xs sm:ml-auto">
+              The ShipStack name, logo, and original materials on this site belong to Kush. For licensing or press,
+              reach out through the same channels you would for product feedback—there is no separate “legal@” queue.
+            </p>
+          </div>
         </div>
-        <span className="text-zinc-600">ShipStack</span>
+
+        <div
+          className="mt-10 pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[11px] text-zinc-700 font-mono"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
+        >
+          <span>ShipStack · distributed execution</span>
+          <span className="text-zinc-600">Kush · all rights reserved</span>
+        </div>
       </div>
-      <p>Distributed execution engine · Real-time CI/CD · Zero ceremony</p>
     </footer>
   );
 }
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 overflow-x-hidden">
-      <NavBar />
+    <div className="relative min-h-screen bg-[#09090b] text-zinc-100 overflow-x-hidden">
+      {/* Fixed behind UI; sections use transparent fills so stars stay visible */}
+      <ShootingStars />
 
-      <main>
-        {/* Scene 1: Hero — push code, watch it deploy */}
-        <HeroScene />
+      <div className="relative z-10">
+        <NavBar />
 
-        {/* Scene 2: Scroll-driven pipeline */}
-        <PipelineScene />
+        <main>
+          {/* Scene 1: Hero — push code, watch it deploy */}
+          <HeroScene />
 
-        {/* Scene 3: Parallel builds */}
-        <ParallelScene />
+          {/* Scene 2: Scroll-driven pipeline */}
+          <PipelineScene />
 
-        {/* Scene 4: Live metrics */}
-        <MetricsSceneSection />
+          {/* Scene 3: Parallel builds */}
+          <ParallelScene />
 
-        {/* Scene 5: Final CTA */}
-        <CtaScene />
-      </main>
+          {/* Scene 4: Live metrics */}
+          <MetricsSceneSection />
 
-      <Footer />
+          {/* Scene 5: Final CTA */}
+          <CtaScene />
+        </main>
+
+        <Footer />
+      </div>
     </div>
   );
 }

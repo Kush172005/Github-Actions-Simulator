@@ -36,7 +36,7 @@ export function HeroScene() {
   const [deployed, setDeployed] = useState(false);
 
   return (
-    <section className="relative min-h-screen flex flex-col overflow-hidden bg-[#09090b]">
+    <section className="relative min-h-screen flex flex-col overflow-hidden bg-transparent">
       {/* Ambient background orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
         <AmbientOrb style={{ width: 600, height: 600, top: "-20%", left: "-10%" }} color="rgba(139,92,246,0.15)" delay={0} />
@@ -224,7 +224,7 @@ export function PipelineScene() {
     <section
       ref={sectionRef}
       id="pipeline"
-      className="relative bg-[#09090b] border-t"
+      className="relative bg-transparent border-t"
       style={{ borderColor: "rgba(255,255,255,0.04)" }}
     >
       {/* Background */}
@@ -400,7 +400,7 @@ export function PipelineScene() {
 export function ParallelScene() {
   return (
     <section
-      className="relative min-h-screen flex flex-col justify-center py-24 px-4 border-t overflow-hidden bg-[#07070a]"
+      className="relative min-h-screen flex flex-col justify-center py-24 px-4 border-t overflow-hidden bg-transparent"
       style={{ borderColor: "rgba(255,255,255,0.04)" }}
     >
       {/* Background */}
@@ -447,7 +447,7 @@ export function MetricsSceneSection() {
   return (
     <section
       className="relative min-h-screen flex flex-col justify-center py-24 px-4 border-t overflow-hidden"
-      style={{ background: "#08080b", borderColor: "rgba(255,255,255,0.04)" }}
+      style={{ background: "transparent", borderColor: "rgba(255,255,255,0.04)" }}
     >
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <div className="absolute inset-0 bg-fine-grid opacity-40" />
@@ -493,7 +493,7 @@ export function CtaScene() {
   return (
     <section
       className="relative min-h-screen flex items-center justify-center py-24 px-4 border-t overflow-hidden"
-      style={{ background: "#09090b", borderColor: "rgba(255,255,255,0.04)" }}
+      style={{ background: "transparent", borderColor: "rgba(255,255,255,0.04)" }}
     >
       {/* Glow orb */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>

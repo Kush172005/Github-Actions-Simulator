@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const AVATAR_URL = "https://avatars.githubusercontent.com/u/1024025?v=4";
+const AVATAR_URL = "https://avatars.githubusercontent.com/u/145124726?v=4";
 
 function CommitHash() {
   const [hash] = useState(() =>
