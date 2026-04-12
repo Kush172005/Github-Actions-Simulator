@@ -1,0 +1,12 @@
+# Pydantic 2.10.x pulled pydantic-core 2.27.x → no cp314 wheel → source build fails on Python 3.14
+# (PyO3 capped below 3.14 on those releases). Pydantic 2.12.x resolves pydantic-core 2.41+ with wheels.
+fastapi>=0.115.6,<0.116
+uvicorn[standard]>=0.32.1,<0.33
+motor==3.6.0
+pydantic>=2.12.0,<2.13
+pydantic-settings>=2.7.0,<3
+python-jose[cryptography]==3.3.0
+httpx==0.28.1
+google-auth==2.36.0
+requests>=2.32.0
+email-validator==2.2.0

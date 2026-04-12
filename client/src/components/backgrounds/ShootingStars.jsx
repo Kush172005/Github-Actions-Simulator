@@ -7,7 +7,7 @@ const SPAWN_MIN_MS = 900;
 const SPAWN_MAX_MS = 5200;
 
 function pickMeteorMotion(w, h) {
-  const dist = 480 + Math.random() * 600;
+  const dist = 480 + Math.random() * 200;
   const roll = Math.random();
 
   let sx;

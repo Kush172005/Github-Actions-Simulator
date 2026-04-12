@@ -1,9 +1,14 @@
 import { useRef, useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { CodeEditorMock } from "../cinematic/CodeEditorMock.jsx";
 import { GitHubCommitCard } from "../cinematic/GitHubCommitCard.jsx";
 import { PipelineNode } from "../cinematic/PipelineNode.jsx";
-import { DataPacket, QueueStack, QueuePanel } from "../cinematic/FlowElements.jsx";
+import {
+  DataPacket,
+  QueueStack,
+  QueuePanel,
+} from "../cinematic/FlowElements.jsx";
 import { LiveTerminal } from "../cinematic/LiveTerminal.jsx";
 import { MetricsScene } from "../cinematic/MetricsScene.jsx";
 import { ParallelBuildsScene } from "../cinematic/ParallelBuildsScene.jsx";
@@ -26,7 +31,12 @@ function AmbientOrb({ style, color, delay = 0 }) {
       className="absolute rounded-full pointer-events-none"
       style={{ ...style, background: color, filter: "blur(80px)" }}
       animate={{ opacity: [0.25, 0.45, 0.25], scale: [1, 1.08, 1] }}
-      transition={{ duration: 10 + delay, repeat: Infinity, ease: "easeInOut", delay }}
+      transition={{
+        duration: 10 + delay,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay,
+      }}
     />
   );
 }
@@ -38,12 +48,33 @@ export function HeroScene() {
   return (
     <section className="relative min-h-screen flex flex-col overflow-hidden bg-transparent">
       {/* Ambient background orbs */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-        <AmbientOrb style={{ width: 600, height: 600, top: "-20%", left: "-10%" }} color="rgba(139,92,246,0.15)" delay={0} />
-        <AmbientOrb style={{ width: 500, height: 500, top: "10%", right: "-15%" }} color="rgba(52,211,153,0.12)" delay={3} />
-        <AmbientOrb style={{ width: 400, height: 400, bottom: "-10%", left: "30%" }} color="rgba(59,130,246,0.1)" delay={6} />
+      <div
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        aria-hidden
+      >
+        <AmbientOrb
+          style={{ width: 600, height: 600, top: "-20%", left: "-10%" }}
+          color="rgba(139,92,246,0.15)"
+          delay={0}
+        />
+        <AmbientOrb
+          style={{ width: 500, height: 500, top: "10%", right: "-15%" }}
+          color="rgba(52,211,153,0.12)"
+          delay={3}
+        />
+        <AmbientOrb
+          style={{ width: 400, height: 400, bottom: "-10%", left: "30%" }}
+          color="rgba(59,130,246,0.1)"
+          delay={6}
+        />
         {/* Dot grid */}
-        <div className="absolute inset-0 bg-dot-grid opacity-40" style={{ maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black, transparent)" }} />
+        <div
+          className="absolute inset-0 bg-dot-grid opacity-40"
+          style={{
+            maskImage:
+              "radial-gradient(ellipse 80% 60% at 50% 40%, black, transparent)",
+          }}
+        />
       </div>
 
       {/* Top text */}
@@ -59,7 +90,10 @@ export function HeroScene() {
             color: "#34d399",
           }}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" style={{ animation: "packet-pulse 1.5s infinite" }} />
+          <span
+            className="w-1.5 h-1.5 rounded-full bg-emerald-400"
+            style={{ animation: "packet-pulse 1.5s infinite" }}
+          />
           Live execution engine — v2.4.1
         </motion.div>
 
@@ -80,8 +114,9 @@ export function HeroScene() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 0.6 }}
         >
-          Webhook fires. FastAPI validates. Redis queues. Workers execute.<br />
-          Real-time logs stream back — in milliseconds.
+          Webhook fires. FastAPI validates. Redis queues. Workers execute.
+          <br />
+          Real-time logs stream back to the user in milliseconds.
         </motion.p>
       </div>
 
@@ -95,7 +130,10 @@ export function HeroScene() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            <CodeEditorMock onCommitReady={() => setCommitReady(true)} isActive={true} />
+            <CodeEditorMock
+              onCommitReady={() => setCommitReady(true)}
+              isActive={true}
+            />
           </motion.div>
 
           {/* Right: Commit card + status feed */}
@@ -103,9 +141,16 @@ export function HeroScene() {
             <motion.div
               initial={{ opacity: 0, x: 24 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              transition={{
+                delay: 0.5,
+                duration: 0.7,
+                ease: [0.22, 1, 0.36, 1],
+              }}
             >
-              <GitHubCommitCard visible={commitReady} onDeployed={() => setDeployed(true)} />
+              <GitHubCommitCard
+                visible={commitReady}
+                onDeployed={() => setDeployed(true)}
+              />
             </motion.div>
 
             {/* Webhook fired indicator */}
@@ -120,18 +165,35 @@ export function HeroScene() {
                 >
                   <motion.div
                     className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ background: "rgba(52,211,153,0.12)", border: "1px solid rgba(52,211,153,0.25)" }}
+                    style={{
+                      background: "rgba(52,211,153,0.12)",
+                      border: "1px solid rgba(52,211,153,0.25)",
+                    }}
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   >
-                    <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4 text-emerald-400"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </motion.div>
                   <div>
-                    <p className="text-sm font-semibold text-emerald-300">Webhook dispatched</p>
-                    <p className="text-xs text-zinc-500 mt-0.5 font-mono">POST /webhook/github · 200 OK · 12ms</p>
-                    <p className="text-xs text-zinc-600 mt-1">Job queued. Scroll down to watch the pipeline.</p>
+                    <p className="text-sm font-semibold text-emerald-300">
+                      Webhook dispatched
+                    </p>
+                    <p className="text-xs text-zinc-500 mt-0.5 font-mono">
+                      POST /webhook/github · 200 OK · 12ms
+                    </p>
+                    <p className="text-xs text-zinc-600 mt-1">
+                      Job queued. Scroll down to watch the pipeline.
+                    </p>
                   </div>
                 </motion.div>
               )}
@@ -144,13 +206,29 @@ export function HeroScene() {
               animate={deployed ? { opacity: 1 } : { opacity: 0 }}
               transition={{ delay: 1, duration: 0.6 }}
             >
-              <p className="text-xs text-zinc-600 font-mono">scroll to watch execution</p>
+              <p className="text-xs text-zinc-600 font-mono">
+                scroll to watch execution
+              </p>
               <motion.div
                 animate={{ y: [0, 6, 0] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
-                <svg className="w-5 h-5 text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                <svg
+                  className="w-5 h-5 text-zinc-600"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </motion.div>
             </motion.div>
@@ -166,38 +244,64 @@ export function HeroScene() {
 /* ────────────────────────────────────────────────────────── */
 
 const STEP_META = {
-  gh:  { label: "GitHub Event",      desc: "Webhook dispatched on push",            color: "#a78bfa" },
-  api: { label: "FastAPI Server",    desc: "Validating payload · signing check OK",  color: "#60a5fa" },
-  rq:  { label: "Redis Queue",       desc: "Job #142 enqueued · workers notified",   color: "#fbbf24" },
-  wk:  { label: "Worker Executing",  desc: "Subprocess spawned · logs streaming",    color: "#34d399" },
-  tm:  { label: "Terminal Output",   desc: "Streaming stdout via pub/sub",           color: "#22d3ee" },
+  gh: {
+    label: "GitHub Event",
+    desc: "Webhook dispatched on push",
+    color: "#a78bfa",
+  },
+  api: {
+    label: "FastAPI Server",
+    desc: "Validating payload · signing check OK",
+    color: "#60a5fa",
+  },
+  rq: {
+    label: "Redis Queue",
+    desc: "Job #142 enqueued · workers notified",
+    color: "#fbbf24",
+  },
+  wk: {
+    label: "Worker Executing",
+    desc: "Subprocess spawned · logs streaming",
+    color: "#34d399",
+  },
+  tm: {
+    label: "Terminal Output",
+    desc: "Streaming stdout via pub/sub",
+    color: "#22d3ee",
+  },
 };
 
 export function PipelineScene() {
   const sectionRef = useRef(null);
   const flowRef = useRef(null);
 
-  const githubRef  = useRef(null);
+  const githubRef = useRef(null);
   const fastapiRef = useRef(null);
-  const redisRef   = useRef(null);
-  const workerRef  = useRef(null);
+  const redisRef = useRef(null);
+  const workerRef = useRef(null);
   const terminalRef = useRef(null);
-  const packetRef  = useRef(null);
+  const packetRef = useRef(null);
 
   const stackRef0 = useRef(null);
   const stackRef1 = useRef(null);
   const stackRef2 = useRef(null);
   const stackRef3 = useRef(null);
   const stackRef4 = useRef(null);
-  const stackRefs = useMemo(() => [stackRef0, stackRef1, stackRef2, stackRef3, stackRef4], []);
+  const stackRefs = useMemo(
+    () => [stackRef0, stackRef1, stackRef2, stackRef3, stackRef4],
+    []
+  );
 
-  const refs = useMemo(() => ({
-    github:   githubRef,
-    fastapi:  fastapiRef,
-    redis:    redisRef,
-    worker:   workerRef,
-    terminal: terminalRef,
-  }), []);
+  const refs = useMemo(
+    () => ({
+      github: githubRef,
+      fastapi: fastapiRef,
+      redis: redisRef,
+      worker: workerRef,
+      terminal: terminalRef,
+    }),
+    []
+  );
 
   const [currentStep, setCurrentStep] = useState("gh");
   const [workerBurst, setWorkerBurst] = useState(false);
@@ -228,15 +332,24 @@ export function PipelineScene() {
       style={{ borderColor: "rgba(255,255,255,0.04)" }}
     >
       {/* Background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      <div
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        aria-hidden
+      >
         <div className="absolute inset-0 bg-fine-grid opacity-60" />
         <div
           className="absolute inset-0"
-          style={{ background: "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(139,92,246,0.07), transparent)" }}
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(139,92,246,0.07), transparent)",
+          }}
         />
       </div>
 
-      <div className="relative z-10 flex flex-col" style={{ minHeight: "100vh" }}>
+      <div
+        className="relative z-10 flex flex-col"
+        style={{ minHeight: "100vh" }}
+      >
         {/* Header */}
         <div className="pt-20 pb-12 px-4 text-center flex-shrink-0">
           <motion.p
@@ -271,13 +384,20 @@ export function PipelineScene() {
           >
             <motion.div
               className="w-2.5 h-2.5 rounded-full"
-              style={{ background: meta.color, boxShadow: `0 0 8px ${meta.color}` }}
+              style={{
+                background: meta.color,
+                boxShadow: `0 0 8px ${meta.color}`,
+              }}
               animate={{ scale: [1, 1.4, 1] }}
               transition={{ duration: 1.2, repeat: Infinity }}
             />
             <div>
-              <p className="text-sm font-semibold text-zinc-100">{meta.label}</p>
-              <p className="text-xs text-zinc-500 font-mono mt-0.5">{meta.desc}</p>
+              <p className="text-sm font-semibold text-zinc-100">
+                {meta.label}
+              </p>
+              <p className="text-xs text-zinc-500 font-mono mt-0.5">
+                {meta.desc}
+              </p>
             </div>
           </motion.div>
         </div>
@@ -345,16 +465,28 @@ export function PipelineScene() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Queue panel */}
               <div>
-                <div className="flex items-center gap-2 mb-3 text-xs font-mono uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.2)" }}>
+                <div
+                  className="flex items-center gap-2 mb-3 text-xs font-mono uppercase tracking-wider"
+                  style={{ color: "rgba(255,255,255,0.2)" }}
+                >
                   <IconDatabase className="w-3.5 h-3.5 text-amber-400" />
                   Queue state
                 </div>
-                <QueuePanel active={currentStep === "rq" || currentStep === "wk" || currentStep === "tm"} />
+                <QueuePanel
+                  active={
+                    currentStep === "rq" ||
+                    currentStep === "wk" ||
+                    currentStep === "tm"
+                  }
+                />
               </div>
 
               {/* Terminal */}
               <div ref={terminalRef}>
-                <div className="flex items-center gap-2 mb-3 text-xs font-mono uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.2)" }}>
+                <div
+                  className="flex items-center gap-2 mb-3 text-xs font-mono uppercase tracking-wider"
+                  style={{ color: "rgba(255,255,255,0.2)" }}
+                >
                   <IconTerminal className="w-3.5 h-3.5 text-cyan-400" />
                   Live logs
                   {terminalActive && (
@@ -380,10 +512,13 @@ export function PipelineScene() {
               key={key}
               className="w-2 h-2 rounded-full"
               style={{
-                background: currentStep === key ? m.color : "rgba(255,255,255,0.1)",
+                background:
+                  currentStep === key ? m.color : "rgba(255,255,255,0.1)",
                 boxShadow: currentStep === key ? `0 0 8px ${m.color}` : "none",
               }}
-              animate={currentStep === key ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+              animate={
+                currentStep === key ? { scale: [1, 1.4, 1] } : { scale: 1 }
+              }
               transition={{ duration: 1.5, repeat: Infinity }}
             />
           ))}
@@ -404,10 +539,16 @@ export function ParallelScene() {
       style={{ borderColor: "rgba(255,255,255,0.04)" }}
     >
       {/* Background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      <div
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        aria-hidden
+      >
         <div
           className="absolute inset-0"
-          style={{ background: "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(52,211,153,0.06), transparent)" }}
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(52,211,153,0.06), transparent)",
+          }}
         />
         <div className="absolute inset-0 bg-dot-grid opacity-30" />
       </div>
@@ -428,7 +569,8 @@ export function ParallelScene() {
             Run builds in parallel. No waiting.
           </h2>
           <p className="text-zinc-400 max-w-lg mx-auto text-base">
-            Multiple workers execute simultaneously across regions. Each job gets its own isolated environment.
+            Multiple workers execute simultaneously across regions. Each job
+            gets its own isolated environment.
           </p>
         </motion.div>
 
@@ -447,13 +589,19 @@ export function MetricsSceneSection() {
   return (
     <section
       className="relative min-h-screen flex flex-col justify-center py-24 px-4 border-t overflow-hidden"
-      style={{ background: "transparent", borderColor: "rgba(255,255,255,0.04)" }}
+      style={{
+        background: "transparent",
+        borderColor: "rgba(255,255,255,0.04)",
+      }}
     >
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <div className="absolute inset-0 bg-fine-grid opacity-40" />
         <div
           className="absolute inset-0"
-          style={{ background: "radial-gradient(ellipse 70% 40% at 50% 50%, rgba(59,130,246,0.06), transparent)" }}
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 40% at 50% 50%, rgba(59,130,246,0.06), transparent)",
+          }}
         />
       </div>
 
@@ -472,7 +620,8 @@ export function MetricsSceneSection() {
             Every number, live.
           </h2>
           <p className="text-zinc-400 max-w-lg mx-auto text-base">
-            Observable by design. Queue depth, worker health, and log throughput — always visible, never a black box.
+            Observable by design. Queue depth, worker health, and log throughput
+            — always visible, never a black box.
           </p>
         </motion.div>
 
@@ -489,17 +638,28 @@ export function MetricsSceneSection() {
 
 export function CtaScene() {
   const [hovered, setHovered] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <section
       className="relative min-h-screen flex items-center justify-center py-24 px-4 border-t overflow-hidden"
-      style={{ background: "transparent", borderColor: "rgba(255,255,255,0.04)" }}
+      style={{
+        background: "transparent",
+        borderColor: "rgba(255,255,255,0.04)",
+      }}
     >
       {/* Glow orb */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      <div
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        aria-hidden
+      >
         <motion.div
           className="absolute w-[600px] h-[600px] rounded-full left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-          style={{ background: "radial-gradient(circle, rgba(52,211,153,0.15) 0%, transparent 70%)", filter: "blur(40px)" }}
+          style={{
+            background:
+              "radial-gradient(circle, rgba(52,211,153,0.15) 0%, transparent 70%)",
+            filter: "blur(40px)",
+          }}
           animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -535,7 +695,8 @@ export function CtaScene() {
           viewport={{ once: true }}
           transition={{ delay: 0.1, duration: 0.6 }}
         >
-          Push one commit. Watch the whole pipeline execute in realtime.<br />
+          Push one commit. Watch the whole pipeline execute in realtime.
+          <br />
           No YAML hell. No black boxes.
         </motion.p>
 
@@ -551,13 +712,15 @@ export function CtaScene() {
             type="button"
             className="relative inline-flex items-center gap-2.5 rounded-full text-sm font-bold text-zinc-950 overflow-hidden"
             style={{
-              background: "linear-gradient(135deg, #34d399 0%, #22d3ee 50%, #34d399 100%)",
+              background:
+                "linear-gradient(135deg, #34d399 0%, #22d3ee 50%, #34d399 100%)",
               backgroundSize: "200% 100%",
               padding: "14px 36px",
               boxShadow: hovered
                 ? "0 0 40px rgba(52,211,153,0.6), 0 0 80px rgba(52,211,153,0.2)"
                 : "0 0 24px rgba(52,211,153,0.3)",
             }}
+            onClick={() => navigate("/login")}
             onHoverStart={() => setHovered(true)}
             onHoverEnd={() => setHovered(false)}
             whileHover={{ scale: 1.04 }}
