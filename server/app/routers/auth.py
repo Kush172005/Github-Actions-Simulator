@@ -92,11 +92,17 @@ async def auth_github(
     from app.config import get_settings
 
     s = get_settings()
-    if body.redirect_uri.rstrip("/") != s.github_oauth_redirect_uri.rstrip("/"):
-        # Allow configured redirect only (prevent code injection to wrong app)
+    got = github_oauth.normalize_oauth_redirect_uri(body.redirect_uri)
+    want = github_oauth.normalize_oauth_redirect_uri(s.github_oauth_redirect_uri)
+    if got != want:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="redirect_uri does not match server configuration",
+            detail=(
+                "redirect_uri does not match API GITHUB_OAUTH_REDIRECT_URI. "
+                f"Client sent {body.redirect_uri!r}; server expects {s.github_oauth_redirect_uri!r}. "
+                "Set GITHUB_OAUTH_REDIRECT_URI on Render to your Vercel callback, e.g. "
+                "https://chah-shipstack.vercel.app/auth/callback/github"
+            ),
         )
 
     try:

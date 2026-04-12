@@ -1,6 +1,18 @@
+from urllib.parse import urlsplit, urlunsplit
+
 import httpx
 
 from app.config import Settings, get_settings
+
+
+def normalize_oauth_redirect_uri(uri: str) -> str:
+    """Stable comparison for redirect URIs (trim, strip trailing slash on path, lowercase host)."""
+    u = uri.strip()
+    parts = urlsplit(u)
+    path = (parts.path or "").rstrip("/")
+    scheme = (parts.scheme or "").lower()
+    netloc = parts.netloc.lower()
+    return urlunsplit((scheme, netloc, path, "", ""))
 
 # GitHub REST API rejects requests without a identifying User-Agent (see GitHub API docs).
 _GH_HEADERS_BASE = {
