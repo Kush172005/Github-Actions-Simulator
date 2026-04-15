@@ -4,6 +4,7 @@ import {
   HeroScene,
   PipelineScene,
   ParallelScene,
+  IntelligenceScene,
   MetricsSceneSection,
   CtaScene,
 } from "../components/cinematic/Scenes.jsx";
@@ -58,6 +59,7 @@ function NavBar() {
         <nav className="hidden sm:flex items-center gap-6 text-xs font-medium text-zinc-500">
           {[
             ["Pipeline", "#pipeline"],
+            ["Intelligence", "#intelligence"],
             ["Docs", "#"],
             ["Pricing", "#"],
           ].map(([label, href]) => (
@@ -138,8 +140,9 @@ function Footer() {
               </div>
             </div>
             <p className="text-sm text-zinc-500 leading-relaxed">
-              Pipelines you can trace end to end—webhooks, queues, workers, and logs in one honest thread. No borrowed
-              roadmap slides; just systems that ship.
+              Pipelines you can trace end to end—webhooks, queues, workers, and logs in one thread—plus a dashboard that
+              analyzes any GitHub repo: structure, dependencies, Actions workflows, health scores, and AI-generated
+              insights you can act on.
             </p>
           </div>
 
@@ -185,6 +188,7 @@ export default function LandingPage() {
           <HeroScene />
           <PipelineScene />
           <ParallelScene />
+          <IntelligenceScene />
           <MetricsSceneSection />
           <CtaScene />
         </main>

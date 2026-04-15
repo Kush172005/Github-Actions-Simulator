@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 function formatDate(iso) {
   if (!iso) return "—";
@@ -14,11 +15,9 @@ function formatDate(iso) {
 
 export function RepoCard({ repo, index }) {
   const href = repo.html_url || "#";
+  const analyzeTo = `/dashboard/analyze?repo=${encodeURIComponent(repo.full_name || repo.name || "")}`;
   return (
-    <motion.a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
+    <motion.div
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
@@ -27,7 +26,7 @@ export function RepoCard({ repo, index }) {
         ease: [0.22, 1, 0.36, 1],
       }}
       whileHover={{ scale: 1.03, y: -2 }}
-      className="group glass-card relative block overflow-hidden rounded-xl border border-white/[0.06] p-4 no-underline transition-shadow"
+      className="group glass-card relative overflow-hidden rounded-xl border border-white/[0.06] p-4 transition-shadow"
       style={{
         background: "rgba(24, 24, 27, 0.55)",
         boxShadow: "0 0 0 1px rgba(255,255,255,0.03)",
@@ -41,6 +40,12 @@ export function RepoCard({ repo, index }) {
             "radial-gradient(120% 80% at 100% 0%, rgba(52,211,153,0.08), transparent 55%)",
         }}
       />
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="relative block no-underline"
+      >
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="truncate font-mono text-sm font-semibold text-zinc-100 group-hover:text-white">
@@ -73,6 +78,24 @@ export function RepoCard({ repo, index }) {
           {formatDate(repo.pushed_at || repo.updated_at)}
         </span>
       </div>
-    </motion.a>
+      </a>
+      <div className="relative mt-3 flex gap-2">
+        <Link
+          to={analyzeTo}
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex flex-1 items-center justify-center rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-2 py-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-200 no-underline transition hover:border-emerald-400/40"
+        >
+          Analyze
+        </Link>
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex flex-1 items-center justify-center rounded-lg border border-white/[0.08] px-2 py-1.5 text-[10px] font-semibold text-zinc-400 no-underline transition hover:border-white/15 hover:text-zinc-200"
+        >
+          GitHub
+        </a>
+      </div>
+    </motion.div>
   );
 }

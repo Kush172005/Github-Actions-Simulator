@@ -5,7 +5,10 @@ const SCRIPT = [
   { level: "pending", text: "→  Resolving runner image ubuntu-22.04…" },
   { level: "pending", text: "→  Checking out repository…" },
   { level: "running", text: "●  Cloning repo…" },
-  { level: "running", text: "   remote: Compressing objects: 100% (1824/1824)" },
+  {
+    level: "running",
+    text: "   remote: Compressing objects: 100% (1824/1824)",
+  },
   { level: "running", text: "●  Installing dependencies…" },
   { level: "running", text: "   npm ci — 4.2s" },
   { level: "running", text: "●  Running build…" },
@@ -38,7 +41,8 @@ export function TerminalStream({ active = true }) {
     return () => window.clearTimeout(t);
   }, [active, visible]);
 
-  const lastLevel = SCRIPT[Math.min(visible, SCRIPT.length - 1)]?.level || "running";
+  const lastLevel =
+    SCRIPT[Math.min(visible, SCRIPT.length - 1)]?.level || "running";
 
   return (
     <div
@@ -52,23 +56,25 @@ export function TerminalStream({ active = true }) {
         <span className="h-2 w-2 rounded-full bg-red-500/80" />
         <span className="h-2 w-2 rounded-full bg-amber-500/80" />
         <span className="h-2 w-2 rounded-full bg-emerald-500/80" />
-        <span className="ml-2 text-[11px] text-zinc-600 sm:text-xs">pipeline — live</span>
+        <span className="ml-2 text-[11px] text-zinc-600 sm:text-xs">
+          pipeline — live
+        </span>
         <span
           className={`ml-auto text-[11px] font-medium uppercase tracking-wide sm:text-xs ${
             lastLevel === "success"
               ? "text-emerald-400/90"
               : lastLevel === "failed"
-                ? "text-red-400/90"
-                : "text-sky-400/80"
+              ? "text-red-400/90"
+              : "text-sky-400/80"
           }`}
         >
           {lastLevel === "success"
             ? "success"
             : lastLevel === "failed"
-              ? "failed"
-              : lastLevel === "pending"
-                ? "queued"
-                : "running"}
+            ? "failed"
+            : lastLevel === "pending"
+            ? "queued"
+            : "running"}
         </span>
       </div>
       <div className="min-h-[200px] overflow-hidden px-3 py-3 sm:px-4">
@@ -79,7 +85,9 @@ export function TerminalStream({ active = true }) {
               initial={{ opacity: 0, x: -4 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.12, ease: "easeOut" }}
-              className={`min-h-[1.5rem] ${levelColor[line.level] || "text-zinc-400"}`}
+              className={`min-h-[1.5rem] ${
+                levelColor[line.level] || "text-zinc-400"
+              }`}
             >
               {line.text}
             </motion.div>

@@ -23,7 +23,7 @@ export async function apiFetch(path, options = {}) {
         ? null
         : getStoredToken();
   if (bearer) headers.Authorization = `Bearer ${bearer}`;
-  const res = await fetch(`${BASE}${path}`, { ...options, headers });
+  const res = await fetch(`${BASE}${path}`, { ...options, headers, signal: options.signal });
   if (res.status === 401 && !options.skipAuth) {
     setStoredToken(null);
     const err = new Error("Session expired");
@@ -77,4 +77,16 @@ export async function fetchMe() {
 
 export async function fetchGithubRepos() {
   return apiFetch("/api/github/repos");
+}
+
+/**
+ * @param {{ repo_url?: string, full_name?: string, ref?: string, ci_logs?: string }} body
+ * @param {{ signal?: AbortSignal }} [opts]
+ */
+export async function postAnalyzeRepo(body, opts = {}) {
+  return apiFetch("/api/analyze", {
+    method: "POST",
+    body: JSON.stringify(body),
+    signal: opts.signal,
+  });
 }

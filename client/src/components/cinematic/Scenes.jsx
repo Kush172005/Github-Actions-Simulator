@@ -94,11 +94,11 @@ export function HeroScene() {
             className="w-1.5 h-1.5 rounded-full bg-emerald-400"
             style={{ animation: "packet-pulse 1.5s infinite" }}
           />
-          Live execution engine — v2.4.1
+          ShipStack · execution + repo intelligence
         </motion.div>
 
         <motion.h1
-          className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight leading-none"
+          className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.05] sm:leading-none"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -106,17 +106,35 @@ export function HeroScene() {
           <span className="text-gradient-white">Push code.</span>
           <br />
           <span className="text-gradient-green">Watch it deploy.</span>
+          <br />
+          <motion.span
+            className="text-3xl sm:text-5xl lg:text-6xl font-bold text-gradient-white block mt-2 sm:mt-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            style={{ textShadow: "0 0 40px rgba(52,211,153,0.12)" }}
+          >
+            Understand the whole repo.
+          </motion.span>
         </motion.h1>
 
         <motion.p
-          className="mt-6 text-base sm:text-lg text-zinc-400 max-w-xl mx-auto"
+          className="mt-6 text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 0.6 }}
         >
-          Webhook fires. FastAPI validates. Redis queues. Workers execute.
-          <br />
-          Real-time logs stream back to the user in milliseconds.
+          Webhook fires. FastAPI validates. Redis queues. Workers execute—logs stream in milliseconds.
+        </motion.p>
+        <motion.p
+          className="mt-4 text-sm sm:text-base text-zinc-500 max-w-2xl mx-auto leading-relaxed"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.65 }}
+        >
+          In the app: connect GitHub, paste any <span className="font-mono text-zinc-400">owner/repo</span>, and get
+          static analysis plus AI-generated insights—health score, risk, workflow & dependency signals, prioritized
+          fixes, and copy-ready setup steps.
         </motion.p>
       </div>
 
@@ -191,8 +209,8 @@ export function HeroScene() {
                     <p className="text-xs text-zinc-500 mt-0.5 font-mono">
                       POST /webhook/github · 200 OK · 12ms
                     </p>
-                    <p className="text-xs text-zinc-600 mt-1">
-                      Job queued. Scroll down to watch the pipeline.
+                                       <p className="text-xs text-zinc-600 mt-1">
+                      Job queued. Scroll to watch the pipeline—then see how we score and explain repos in the dashboard.
                     </p>
                   </div>
                 </motion.div>
@@ -370,6 +388,16 @@ export function PipelineScene() {
           >
             Webhook → terminal in one scroll.
           </motion.h2>
+          <motion.p
+            className="mt-4 text-sm sm:text-base text-zinc-500 max-w-lg mx-auto"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.08, duration: 0.55 }}
+          >
+            Same GitHub connection powers deploy signals and the repo intelligence layer—structure, CI YAML, and
+            dependency health—surfaced in your dashboard.
+          </motion.p>
         </div>
 
         {/* Active step indicator */}
@@ -569,13 +597,154 @@ export function ParallelScene() {
             Run builds in parallel. No waiting.
           </h2>
           <p className="text-zinc-400 max-w-lg mx-auto text-base">
-            Multiple workers execute simultaneously across regions. Each job
-            gets its own isolated environment.
+            Multiple workers execute simultaneously across regions. Each job gets its own isolated environment—while
+            analysis jobs score repos and stream structured findings without blocking your shipping path.
           </p>
         </motion.div>
 
         {/* Cards animate themselves via whileInView — no parent active gate */}
         <ParallelBuildsScene />
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* SCENE 3b: REPO INTELLIGENCE (v2)                          */
+/* ────────────────────────────────────────────────────────── */
+
+const INTEL_CARDS = [
+  {
+    title: "Structure & hygiene",
+    body: "Missing README, license, .gitignore, CI—tagged by severity before you merge.",
+    accent: "rgba(167,139,250,0.35)",
+  },
+  {
+    title: "Dependencies",
+    body: "Manifests, lockfiles, outdated npm/PyPI signals—actionable, not a raw dump.",
+    accent: "rgba(52,211,153,0.35)",
+  },
+  {
+    title: "GitHub Actions",
+    body: "Workflow YAML checks—caches, pinning, redundant steps—plain language.",
+    accent: "rgba(34,211,238,0.35)",
+  },
+  {
+    title: "Health & risk",
+    body: "0–100 score plus LOW / MEDIUM / HIGH risk from real findings, not vibes.",
+    accent: "rgba(251,191,36,0.35)",
+  },
+  {
+    title: "AI insight engine",
+    body: "Contextual fixes with impact, reasoning, and priority—grounded in analyzer output.",
+    accent: "rgba(52,211,153,0.45)",
+  },
+  {
+    title: "Setup & logs",
+    body: "Copy-ready commands; optional CI log paste for root-cause + fix hints.",
+    accent: "rgba(96,165,250,0.35)",
+  },
+];
+
+const intelContainer = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.12 },
+  },
+};
+
+const intelItem = {
+  hidden: { opacity: 0, y: 18 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+export function IntelligenceScene() {
+  return (
+    <section
+      id="intelligence"
+      className="relative min-h-screen flex flex-col justify-center py-24 px-4 border-t overflow-hidden bg-transparent"
+      style={{ borderColor: "rgba(255,255,255,0.04)" }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        aria-hidden
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 55% 45% at 70% 20%, rgba(139,92,246,0.08), transparent), radial-gradient(ellipse 50% 40% at 20% 80%, rgba(52,211,153,0.06), transparent)",
+          }}
+        />
+        <div className="absolute inset-0 bg-fine-grid opacity-35" />
+      </div>
+
+      <div className="relative z-10 max-w-6xl mx-auto w-full">
+        <motion.div
+          className="text-center mb-14 sm:mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.6 }}
+        >
+          <p className="text-xs font-mono font-semibold uppercase tracking-[0.25em] mb-3 text-violet-400">
+            Product · v2
+          </p>
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-gradient-white mb-4">
+            Repo intelligence in the same ShipStack surface.
+          </h2>
+          <p className="text-zinc-400 max-w-2xl mx-auto text-base leading-relaxed">
+            Not a separate product—connect GitHub once, then analyze any repository from the dashboard. Static analyzers
+            do the heavy lifting; the AI layer turns structured findings into insights, fixes, and setup guidance you can
+            ship—not generic filler.
+          </p>
+          <motion.p
+            className="mt-4 text-xs sm:text-sm text-zinc-600 max-w-xl mx-auto font-mono leading-relaxed"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.15, duration: 0.5 }}
+          >
+            JWT-secured API · sanitized prompts · structured JSON · skeleton UI · session cache on analyze
+          </motion.p>
+        </motion.div>
+
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          variants={intelContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.12 }}
+        >
+          {INTEL_CARDS.map((card) => (
+            <motion.article
+              key={card.title}
+              variants={intelItem}
+              className="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden group"
+              style={{
+                border: "1px solid rgba(255,255,255,0.06)",
+                background: "rgba(24,24,27,0.5)",
+              }}
+              whileHover={{ y: -3, transition: { duration: 0.25 } }}
+            >
+              <div
+                className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                style={{
+                  background: `radial-gradient(120% 80% at 100% 0%, ${card.accent}, transparent 55%)`,
+                }}
+              />
+              <div className="relative">
+                <h3 className="text-sm font-semibold text-zinc-100 mb-2">{card.title}</h3>
+                <p className="text-xs sm:text-sm text-zinc-500 leading-relaxed">{card.body}</p>
+              </div>
+            </motion.article>
+          ))}
+        </motion.div>
       </div>
     </section>
   );
@@ -620,8 +789,8 @@ export function MetricsSceneSection() {
             Every number, live.
           </h2>
           <p className="text-zinc-400 max-w-lg mx-auto text-base">
-            Observable by design. Queue depth, worker health, and log throughput
-            — always visible, never a black box.
+            Observable by design. Queue depth, worker health, and log throughput—plus repo health scores and analysis
+            status—visible in the dashboard, never a black box.
           </p>
         </motion.div>
 
@@ -689,15 +858,16 @@ export function CtaScene() {
         </motion.h2>
 
         <motion.p
-          className="text-zinc-400 text-base sm:text-lg max-w-xl mx-auto mb-12"
+          className="text-zinc-400 text-base sm:text-lg max-w-xl mx-auto mb-12 leading-relaxed"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1, duration: 0.6 }}
         >
-          Push one commit. Watch the whole pipeline execute in realtime.
+          Push one commit. Watch the pipeline execute in realtime—then open Analyze to score any repo, read AI-backed
+          fixes, and copy setup commands.
           <br />
-          No YAML hell. No black boxes.
+          <span className="text-zinc-500 text-sm sm:text-base">No YAML hell. No black boxes. Same visual language end to end.</span>
         </motion.p>
 
         {/* CTA Button */}
@@ -763,11 +933,11 @@ export function CtaScene() {
           viewport={{ once: true }}
           transition={{ delay: 0.4, duration: 0.6 }}
         >
-          <span>847 builds/sec</span>
+                   <span>live pipeline</span>
           <span className="text-zinc-800">·</span>
-          <span>32 workers</span>
+          <span>repo analyze</span>
           <span className="text-zinc-800">·</span>
-          <span className="text-emerald-600">99.7% uptime</span>
+          <span className="text-emerald-600">AI insights</span>
         </motion.div>
       </div>
     </section>

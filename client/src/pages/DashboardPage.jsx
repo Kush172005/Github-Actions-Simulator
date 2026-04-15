@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchGithubRepos } from "../lib/api.js";
@@ -125,7 +125,7 @@ export default function DashboardPage() {
             </motion.div>
           ) : (
             <>
-              <div className="mb-4 flex items-end justify-between gap-4">
+              <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-zinc-100">
                     Repositories
@@ -134,13 +134,21 @@ export default function DashboardPage() {
                     Pulled live from GitHub · sorted by last push
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => refetchReposOnly()}
-                  className="rounded-lg border border-white/[0.08] px-3 py-1.5 text-[11px] font-medium text-zinc-400 transition hover:border-emerald-500/25 hover:text-zinc-200"
-                >
-                  Refresh
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    to="/dashboard/analyze"
+                    className="rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-semibold text-emerald-200 no-underline transition hover:border-emerald-400/40"
+                  >
+                    Analyze repo
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => refetchReposOnly()}
+                    className="rounded-lg border border-white/[0.08] px-3 py-1.5 text-[11px] font-medium text-zinc-400 transition hover:border-emerald-500/25 hover:text-zinc-200"
+                  >
+                    Refresh
+                  </button>
+                </div>
               </div>
 
               {reposLoading && (

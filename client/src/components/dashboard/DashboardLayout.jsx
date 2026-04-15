@@ -49,6 +49,12 @@ export function DashboardLayout({ user, children, onLogout, onConnectGitHub }) {
           </Link>
 
           <div className="flex items-center gap-3">
+            <Link
+              to="/dashboard/analyze"
+              className="hidden rounded-lg border border-white/[0.08] bg-zinc-900/60 px-3 py-1.5 text-xs font-semibold text-zinc-200 no-underline transition hover:border-emerald-500/30 sm:inline-flex"
+            >
+              Analyze
+            </Link>
             {!user?.github_connected && (
               <button
                 type="button"
