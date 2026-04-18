@@ -41,3 +41,9 @@ app.include_router(analyze.router, prefix="/api")
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/api/ping")
+async def ping():
+    """Minimal no-auth endpoint for uptime monitors and keep-alive schedulers."""
+    return {"ok": True}
