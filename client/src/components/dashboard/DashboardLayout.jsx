@@ -24,24 +24,13 @@ export function DashboardLayout({ user, children, onLogout, onConnectGitHub }) {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2.5 no-underline">
             <div
-              className="flex h-9 w-9 items-center justify-center rounded-xl shadow-lg shadow-emerald-500/15"
-              style={{
-                background: "linear-gradient(135deg, #34d399, #22d3ee)",
-              }}
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900/70 ring-1 ring-emerald-400/20 shadow-lg shadow-emerald-500/15"
             >
-              <svg
-                className="h-4 w-4 text-zinc-950"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
+              <img
+                src="/vite.svg"
+                alt="ShipStack logo"
+                className="h-6 w-6 object-contain drop-shadow-[0_0_8px_rgba(52,211,153,0.35)]"
+              />
             </div>
             <span className="text-sm font-bold tracking-tight text-zinc-100">
               ShipStack

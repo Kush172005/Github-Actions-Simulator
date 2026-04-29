@@ -77,7 +77,10 @@ export default function AnalyzePage() {
             setStatus("success");
             setError(null);
             requestAnimationFrame(() =>
-              resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+              resultsRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              }),
             );
             return;
           } catch {
@@ -107,7 +110,10 @@ export default function AnalyzePage() {
           /* ignore */
         }
         requestAnimationFrame(() =>
-          resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+          resultsRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          }),
         );
       } catch (e) {
         if (e.name === "AbortError") return;
@@ -115,7 +121,7 @@ export default function AnalyzePage() {
         setError(e.message || "Analysis failed");
       }
     },
-    [parsed, refBranch, ciLogs]
+    [parsed, refBranch, ciLogs],
   );
 
   useEffect(() => () => abortRef.current?.abort(), []);
@@ -133,7 +139,11 @@ export default function AnalyzePage() {
   }
 
   return (
-    <DashboardLayout user={user} onLogout={logout} onConnectGitHub={connectGitHub}>
+    <DashboardLayout
+      user={user}
+      onLogout={logout}
+      onConnectGitHub={connectGitHub}
+    >
       <div className="mb-6 flex flex-wrap items-center gap-3 text-xs">
         <Link
           to="/dashboard"
@@ -145,11 +155,18 @@ export default function AnalyzePage() {
         <span className="font-semibold text-zinc-200">Analyze</span>
       </div>
 
-      <section className="glass-card rounded-2xl border border-white/[0.06] p-5 sm:p-6" style={{ background: "rgba(24,24,27,0.55)" }}>
-        <h2 className="text-lg font-semibold text-white">Repository intelligence</h2>
+      <section
+        className="glass-card rounded-2xl border border-white/[0.06] p-5 sm:p-6"
+        style={{ background: "rgba(24,24,27,0.55)" }}
+      >
+        <h2 className="text-lg font-semibold text-white">
+          Repository intelligence
+        </h2>
         <p className="mt-1 text-xs text-zinc-500">
-          Paste a GitHub URL or <span className="font-mono text-zinc-400">owner/repo</span>. JWT
-          required; your linked GitHub token is used when available for private repos.
+          Paste a GitHub URL or{" "}
+          <span className="font-mono text-zinc-400">owner/repo</span>. JWT
+          required; your linked GitHub token is used when available for private
+          repos.
         </p>
 
         <div className="mt-5 grid gap-4 lg:grid-cols-12">
@@ -262,7 +279,9 @@ export default function AnalyzePage() {
                   {safePlainText(data.default_branch)} ·{" "}
                   <span className="text-zinc-400">Analyzed ref:</span>{" "}
                   {safePlainText(data.resolved_branch)} ·{" "}
-                  <span className="font-mono text-zinc-500">{safePlainText(data.commit_sha).slice(0, 7)}</span>
+                  <span className="font-mono text-zinc-500">
+                    {safePlainText(data.commit_sha).slice(0, 7)}
+                  </span>
                 </p>
               </div>
             </div>
@@ -275,7 +294,9 @@ export default function AnalyzePage() {
               </h3>
               <div className="mt-3 rounded-xl border border-white/[0.06] bg-zinc-900/40 p-4">
                 <p className="text-xs font-semibold text-emerald-300/90">
-                  Root cause ({Math.round((data.log_explanation.confidence || 0) * 100)}% confidence)
+                  Root cause (
+                  {Math.round((data.log_explanation.confidence || 0) * 100)}%
+                  confidence)
                 </p>
                 <p className="mt-2 text-sm text-zinc-100 whitespace-pre-wrap">
                   {safePlainText(data.log_explanation.root_cause)}

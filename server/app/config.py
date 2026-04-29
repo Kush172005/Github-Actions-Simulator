@@ -6,7 +6,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
 
     mongodb_uri: str = "mongodb://localhost:27017"
     database_name: str = "shipstack"
@@ -20,7 +22,9 @@ class Settings(BaseSettings):
     github_client_id: str = ""
     github_client_secret: str = ""
     # Default matches production SPA; override with GITHUB_OAUTH_REDIRECT_URI (e.g. localhost for local API).
-    github_oauth_redirect_uri: str = "https://chah-shipstack.vercel.app/auth/callback/github"
+    github_oauth_redirect_uri: str = (
+        "https://chah-shipstack.vercel.app/auth/callback/github"
+    )
 
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
@@ -62,9 +66,11 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> List[str]:
         # Origin header never includes a trailing slash; strip so env typos still match.
-        return [o.strip().rstrip("/") for o in self.cors_origins.split(",") if o.strip()]
+        return [
+            o.strip().rstrip("/") for o in self.cors_origins.split(",") if o.strip()
+        ]
 
 
-@lru_cache
+@lru_cache()
 def get_settings() -> Settings:
     return Settings()

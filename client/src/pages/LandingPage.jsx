@@ -24,27 +24,13 @@ function NavBar() {
       }}
     >
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2.5 group no-underline">
-          <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-            style={{
-              background: "linear-gradient(135deg, #34d399, #22d3ee)",
-              boxShadow: "0 0 12px rgba(52,211,153,0.4)",
-            }}
-          >
-            <svg
-              className="w-4 h-4 text-zinc-900"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
+        <Link to="/" className="flex items-center gap-2 group no-underline">
+          <div className="h-8 w-8 rounded-xl bg-zinc-900/70 ring-1 ring-emerald-400/20 flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/25">
+            <img
+              src="/vite.svg"
+              alt="ShipStack logo"
+              className="h-6 w-6 object-contain drop-shadow-[0_0_8px_rgba(52,211,153,0.35)]"
+            />
           </div>
           <div className="flex flex-col items-start leading-tight">
             <span className="text-sm font-bold text-zinc-100 tracking-tight">
@@ -106,29 +92,23 @@ function Footer() {
   return (
     <footer
       className="border-t"
-      style={{ borderColor: "rgba(255,255,255,0.06)", background: "transparent" }}
+      style={{
+        borderColor: "rgba(255,255,255,0.06)",
+        background: "transparent",
+      }}
     >
       <div className="mx-auto max-w-5xl px-4 py-12 sm:py-14">
         <div className="flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between sm:gap-12">
           <div className="max-w-md">
             <div className="flex items-center gap-2 mb-3">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: "linear-gradient(135deg, #34d399, #22d3ee)" }}
+            <div
+                className="h-9 w-9 rounded-xl bg-zinc-900/70 ring-1 ring-emerald-400/20 flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/20"
               >
-                <svg
-                  className="w-4 h-4 text-zinc-900"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
+                <img
+                  src="/vite.svg"
+                  alt="ShipStack logo"
+                  className="h-6 w-6 object-contain drop-shadow-[0_0_8px_rgba(52,211,153,0.35)]"
+                />
               </div>
               <div className="leading-tight">
                 <p className="text-sm font-semibold text-zinc-200 tracking-tight">
@@ -140,9 +120,10 @@ function Footer() {
               </div>
             </div>
             <p className="text-sm text-zinc-500 leading-relaxed">
-              Pipelines you can trace end to end—webhooks, queues, workers, and logs in one thread—plus a dashboard that
-              analyzes any GitHub repo: structure, dependencies, Actions workflows, health scores, and AI-generated
-              insights you can act on.
+              Pipelines you can trace end to end—webhooks, queues, workers, and
+              logs in one thread—plus a dashboard that analyzes any GitHub repo:
+              structure, dependencies, Actions workflows, health scores, and
+              AI-generated insights you can act on.
             </p>
           </div>
 
@@ -158,8 +139,10 @@ function Footer() {
               </p>
             </div>
             <p className="text-[11px] text-zinc-600 leading-snug max-w-xs sm:ml-auto">
-              The ShipStack name, logo, and original materials on this site belong to Kush. For licensing or press,
-              reach out through the same channels you would for product feedback—there is no separate “legal@” queue.
+              The ShipStack name, logo, and original materials on this site
+              belong to Kush. For licensing or press, reach out through the same
+              channels you would for product feedback—there is no separate
+              “legal@” queue.
             </p>
           </div>
         </div>

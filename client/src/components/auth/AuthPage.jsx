@@ -38,7 +38,7 @@ export function AuthPage() {
         setAuthBusy(false);
       }
     },
-    [loginWithJwt, navigate]
+    [loginWithJwt, navigate],
   );
 
   useEffect(() => {
@@ -133,24 +133,13 @@ export function AuthPage() {
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.05, duration: 0.45 }}
-              className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg shadow-emerald-500/20"
-              style={{
-                background: "linear-gradient(135deg, #34d399, #22d3ee)",
-              }}
+              className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900/60 ring-1 ring-emerald-400/20 shadow-lg shadow-emerald-500/20"
             >
-              <svg
-                className="h-6 w-6 text-zinc-950"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
+              <img
+                src="/vite.svg"
+                alt="ShipStack logo"
+                className="h-8 w-8 object-contain drop-shadow-[0_0_10px_rgba(52,211,153,0.35)]"
+              />
             </motion.div>
             <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
               Welcome to ShipStack
@@ -182,7 +171,10 @@ export function AuthPage() {
             {!authBusy && (
               <div className="space-y-4">
                 <div className="flex min-h-[48px] w-full justify-center [&>div]:!w-full">
-                  <div ref={googleDivRef} className="flex w-full justify-center" />
+                  <div
+                    ref={googleDivRef}
+                    className="flex w-full justify-center"
+                  />
                 </div>
 
                 <div className="relative py-2">
@@ -210,8 +202,9 @@ export function AuthPage() {
             )}
 
             <p className="mt-6 text-center text-[11px] leading-relaxed text-zinc-600">
-              By continuing you agree to our terms and acknowledge the connection
-              between ShipStack and your GitHub repositories for CI visibility.
+              By continuing you agree to our terms and acknowledge the
+              connection between ShipStack and your GitHub repositories for CI
+              visibility.
             </p>
           </motion.div>
 
