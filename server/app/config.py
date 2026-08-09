@@ -28,6 +28,12 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
+    openrouter_api_key: str = Field(
+        default="",
+        validation_alias="OPENROUTER_API_KEY",
+        description="OpenRouter API key for free-tier frontier models (primary provider).",
+    )
+
     huggingface_api_key: str = Field(
         default="",
         validation_alias="HUGGINGFACE_API_KEY",
@@ -39,9 +45,9 @@ class Settings(BaseSettings):
         description="Alternate env name; merged into huggingface_api_key if key is empty.",
     )
 
-    @field_validator("huggingface_api_key", "huggingface_api_token", mode="before")
+    @field_validator("openrouter_api_key", "huggingface_api_key", "huggingface_api_token", mode="before")
     @classmethod
-    def _strip_hf_fields(cls, v):
+    def _strip_api_key_fields(cls, v):
         if v is None:
             return ""
         return str(v).strip().strip('"').strip("'")

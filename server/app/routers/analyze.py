@@ -32,7 +32,9 @@ router = APIRouter(tags=["analyze"])
 
 def _ai_configured() -> bool:
     s = get_settings()
-    return bool((s.huggingface_api_key or "").strip())
+    has_or = bool((s.openrouter_api_key or "").strip())
+    has_hf = bool((s.huggingface_api_key or "").strip())
+    return has_or or has_hf
 
 
 def _to_analyzer_out(results) -> list[AnalyzerOut]:
@@ -63,7 +65,10 @@ async def analyze_repo(
     if not _ai_configured():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="AI is not configured (set HUGGINGFACE_API_KEY or HUGGINGFACE_API_TOKEN with Inference Providers permission)",
+            detail=(
+                "AI is not configured — set OPENROUTER_API_KEY (free at openrouter.ai/keys) "
+                "or HUGGINGFACE_API_KEY in your .env file"
+            ),
         )
 
     client = getattr(request.app.state, "http_client", None)
