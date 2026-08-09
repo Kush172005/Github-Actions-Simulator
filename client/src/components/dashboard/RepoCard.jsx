@@ -13,9 +13,10 @@ function formatDate(iso) {
   }).format(d);
 }
 
-export function RepoCard({ repo, index }) {
+export function RepoCard({ repo, index, onOpenDetails }) {
   const href = repo.html_url || "#";
   const analyzeTo = `/dashboard/analyze?repo=${encodeURIComponent(repo.full_name || repo.name || "")}`;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -25,8 +26,9 @@ export function RepoCard({ repo, index }) {
         duration: 0.4,
         ease: [0.22, 1, 0.36, 1],
       }}
-      whileHover={{ scale: 1.03, y: -2 }}
-      className="group glass-card relative overflow-hidden rounded-xl border border-white/[0.06] p-4 transition-shadow"
+      whileHover={{ scale: 1.025, y: -2 }}
+      onClick={() => onOpenDetails && onOpenDetails(repo)}
+      className="group glass-card relative overflow-hidden rounded-xl border border-white/[0.06] p-4 transition-all duration-300 shadow-md cursor-pointer hover:shadow-lg hover:border-emerald-500/25"
       style={{
         background: "rgba(24, 24, 27, 0.55)",
         boxShadow: "0 0 0 1px rgba(255,255,255,0.03)",
@@ -35,37 +37,33 @@ export function RepoCard({ repo, index }) {
       <div
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
         style={{
-          boxShadow: "inset 0 0 0 1px rgba(52,211,153,0.25)",
+          boxShadow: "inset 0 0 0 1px rgba(52,211,153,0.15)",
           background:
-            "radial-gradient(120% 80% at 100% 0%, rgba(52,211,153,0.08), transparent 55%)",
+            "radial-gradient(120% 80% at 100% 0%, rgba(52,211,153,0.05), transparent 55%)",
         }}
       />
-      <a
-        href={href}
-        target="_blank"
-        rel="noreferrer"
-        className="relative block no-underline"
-      >
+      
       <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate font-mono text-sm font-semibold text-zinc-100 group-hover:text-white">
+          <p className="truncate font-mono text-sm font-semibold text-zinc-100 group-hover:text-white transition-colors">
             {repo.name}
           </p>
           {repo.description && (
-            <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-zinc-500">
+            <p className="mt-1.5 line-clamp-2 text-[11px] leading-snug text-zinc-500">
               {repo.description}
             </p>
           )}
         </div>
         {repo.private && (
-          <span className="shrink-0 rounded-md border border-amber-500/25 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-400/90">
+          <span className="shrink-0 rounded-md border border-amber-500/25 bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-400">
             Private
           </span>
         )}
       </div>
+
       <div className="relative mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-zinc-500">
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-sky-400/80" />
+          <span className="h-1.5 w-1.5 rounded-full bg-sky-400/80 animate-pulse" />
           {repo.language || "—"}
         </span>
         <span className="inline-flex items-center gap-1 text-zinc-400">
@@ -78,24 +76,27 @@ export function RepoCard({ repo, index }) {
           {formatDate(repo.pushed_at || repo.updated_at)}
         </span>
       </div>
-      </a>
-      <div className="relative mt-3 flex gap-2">
+
+      <div className="relative mt-4 flex gap-2">
         <Link
           to={analyzeTo}
           onClick={(e) => e.stopPropagation()}
-          className="inline-flex flex-1 items-center justify-center rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-2 py-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-200 no-underline transition hover:border-emerald-400/40"
+          className="inline-flex flex-1 items-center justify-center rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-200 no-underline transition hover:bg-emerald-500/20 active:scale-[0.98]"
         >
-          Analyze
+          Quick Analyze
         </Link>
-        <a
-          href={href}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex flex-1 items-center justify-center rounded-lg border border-white/[0.08] px-2 py-1.5 text-[10px] font-semibold text-zinc-400 no-underline transition hover:border-white/15 hover:text-zinc-200"
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenDetails && onOpenDetails(repo);
+          }}
+          className="inline-flex flex-1 items-center justify-center rounded-lg border border-white/[0.08] px-2 py-1.5 text-[10px] font-semibold text-zinc-400 transition hover:border-white/20 hover:text-zinc-200 active:scale-[0.98]"
         >
-          GitHub
-        </a>
+          View Profile
+        </button>
       </div>
     </motion.div>
   );
 }
+

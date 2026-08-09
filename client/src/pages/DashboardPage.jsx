@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchGithubRepos } from "../lib/api.js";
 import { DashboardLayout } from "../components/dashboard/DashboardLayout.jsx";
 import { RepoCard } from "../components/dashboard/RepoCard.jsx";
 import { ActivityPanel } from "../components/dashboard/ActivityPanel.jsx";
+import { RepoPreviewModal } from "../components/dashboard/RepoPreviewModal.jsx";
 
 const ghClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
 const redirectUri =
@@ -19,10 +20,19 @@ export default function DashboardPage() {
   const [reposError, setReposError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [selectedRepo, setSelectedRepo] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const ITEMS_PER_PAGE = 6;
   
   /** Avoid skeleton flash on refetch — only show shimmer when we have no rows yet. */
   const hadReposRef = useRef(false);
   const prevUserIdRef = useRef(undefined);
+
+  // Reset pagination on search or tab switch
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeTab]);
 
   const filteredRepos = repos.filter((repo) => {
     const matchesSearch =
@@ -38,6 +48,13 @@ export default function DashboardPage() {
   const publicCount = repos.filter(r => !r.private).length;
   const privateCount = repos.filter(r => r.private).length;
 
+  // Pagination parameters
+  const totalPages = Math.ceil(filteredRepos.length / ITEMS_PER_PAGE) || 1;
+  const paginatedRepos = filteredRepos.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   const loadRepos = useCallback(async () => {
     if (!user?.github_connected) {
       setRepos([]);
@@ -45,14 +62,31 @@ export default function DashboardPage() {
       setReposLoading(false);
       return;
     }
-    const showSkeleton = !hadReposRef.current;
-    if (showSkeleton) setReposLoading(true);
+
+    // Check session storage cache first
+    const cached = sessionStorage.getItem("github_repos_cache");
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setRepos(parsed);
+          hadReposRef.current = true;
+          setReposLoading(false);
+          return;
+        }
+      } catch (e) {
+        // ignore malformed cache
+      }
+    }
+
+    setReposLoading(true);
     setReposError(null);
     try {
       const list = await fetchGithubRepos();
       const arr = Array.isArray(list) ? list : [];
       setRepos(arr);
       hadReposRef.current = arr.length > 0;
+      sessionStorage.setItem("github_repos_cache", JSON.stringify(arr));
     } catch (e) {
       setReposError(e.message || "Could not load repositories");
       setRepos([]);
@@ -70,6 +104,7 @@ export default function DashboardPage() {
       const arr = Array.isArray(list) ? list : [];
       setRepos(arr);
       hadReposRef.current = arr.length > 0;
+      sessionStorage.setItem("github_repos_cache", JSON.stringify(arr));
     } catch (e) {
       setReposError(e.message || "Could not load repositories");
     } finally {
@@ -85,7 +120,6 @@ export default function DashboardPage() {
       setRepos([]);
     }
     loadRepos();
-    // Primitives only — `user` object identity changes often and was retriggering fetch + skeleton flicker.
   }, [loading, user?.id, user?.github_connected, loadRepos]);
 
   const connectGitHub = useCallback(() => {
@@ -255,11 +289,42 @@ export default function DashboardPage() {
               )}
 
               {!reposLoading && filteredRepos.length > 0 && (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {filteredRepos.map((repo, i) => (
-                    <RepoCard key={repo.id} repo={repo} index={i} />
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {paginatedRepos.map((repo, i) => (
+                      <RepoCard
+                        key={repo.id}
+                        repo={repo}
+                        index={i}
+                        onOpenDetails={setSelectedRepo}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Pagination Panel */}
+                  {totalPages > 1 && (
+                    <div className="mt-6 flex items-center justify-between border-t border-white/[0.04] pt-4">
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="rounded-lg border border-white/[0.08] px-3 py-1.5 text-xs font-semibold text-zinc-400 hover:text-white transition disabled:opacity-40 disabled:hover:text-zinc-400"
+                      >
+                        Previous
+                      </button>
+                      <span className="text-xs text-zinc-500 font-mono">
+                        Page <span className="text-zinc-200 font-bold">{currentPage}</span> of{" "}
+                        <span className="text-zinc-200 font-bold">{totalPages}</span>
+                      </span>
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="rounded-lg border border-white/[0.08] px-3 py-1.5 text-xs font-semibold text-zinc-400 hover:text-white transition disabled:opacity-40 disabled:hover:text-zinc-400"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
@@ -269,6 +334,16 @@ export default function DashboardPage() {
           <ActivityPanel active />
         </div>
       </div>
+
+      {/* Repo Preview Modal Overlay */}
+      <AnimatePresence>
+        {selectedRepo && (
+          <RepoPreviewModal
+            repo={selectedRepo}
+            onClose={() => setSelectedRepo(null)}
+          />
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 }

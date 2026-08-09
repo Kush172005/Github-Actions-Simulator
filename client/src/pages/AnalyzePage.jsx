@@ -35,6 +35,27 @@ export default function AnalyzePage() {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
+  const [cachedAnalysis, setCachedAnalysis] = useState(null);
+
+  const parsed = useMemo(() => parseRepoInput(debounced), [debounced]);
+
+  // Check for cached analysis on changes to repository or branch
+  useEffect(() => {
+    if (parsed.ok) {
+      const key = cacheKey(parsed.full_name, refBranch);
+      const raw = sessionStorage.getItem(key);
+      if (raw) {
+        try {
+          const cached = JSON.parse(raw);
+          setCachedAnalysis(cached);
+          return;
+        } catch {
+          // ignore
+        }
+      }
+    }
+    setCachedAnalysis(null);
+  }, [parsed, refBranch]);
 
   const stack = useMemo(() => {
     if (!data || !data.analyzers) return null;
@@ -75,7 +96,6 @@ export default function AnalyzePage() {
     return () => clearTimeout(t);
   }, [input]);
 
-  const parsed = useMemo(() => parseRepoInput(debounced), [debounced]);
 
   const connectGitHub = useCallback(() => {
     if (!ghClientId) return;
@@ -101,6 +121,7 @@ export default function AnalyzePage() {
           try {
             const cached = JSON.parse(raw);
             setData(cached);
+            setCachedAnalysis(cached);
             setStatus("success");
             setError(null);
             requestAnimationFrame(() =>
@@ -130,6 +151,7 @@ export default function AnalyzePage() {
         };
         const res = await postAnalyzeRepo(body, { signal: ac.signal });
         setData(res);
+        setCachedAnalysis(res);
         setStatus("success");
         try {
           sessionStorage.setItem(key, JSON.stringify(res));
@@ -195,6 +217,72 @@ export default function AnalyzePage() {
           required; your linked GitHub token is used when available for private
           repos.
         </p>
+
+        {cachedAnalysis && status !== "loading" && status !== "success" && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.03] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-left shadow-[0_0_20px_rgba(52,211,153,0.03)]"
+          >
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] text-emerald-400 border border-emerald-500/30">
+                ✓
+              </span>
+              <div>
+                <p className="text-xs font-bold text-emerald-300">
+                  Cached Audit Result Found
+                </p>
+                <p className="mt-1 text-[11px] text-zinc-400 leading-normal">
+                  A previous security audit for this repository exists. Health Score:{" "}
+                  <span className="font-mono font-bold text-white">
+                    {cachedAnalysis.health_score}
+                  </span>
+                  /100 · Risk:{" "}
+                  <span className={`font-bold ${
+                    cachedAnalysis.risk_level === "high" ? "text-red-400" :
+                    cachedAnalysis.risk_level === "medium" ? "text-amber-400" : "text-emerald-400"
+                  }`}>
+                    {(cachedAnalysis.risk_level || "unknown").toUpperCase()}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setData(cachedAnalysis);
+                  setStatus("success");
+                  setError(null);
+                }}
+                className="rounded-lg border border-white/[0.08] bg-zinc-900/60 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-300 hover:border-white/20 hover:text-white transition active:scale-95"
+              >
+                Load Audit
+              </button>
+              <button
+                type="button"
+                onClick={() => runAnalyze({ skipCache: true })}
+                className="rounded-lg bg-gradient-to-r from-emerald-400 to-cyan-400 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-950 hover:opacity-95 shadow-sm transition active:scale-95"
+              >
+                Re-run Scan
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const key = cacheKey(parsed.full_name, refBranch);
+                  sessionStorage.removeItem(key);
+                  setCachedAnalysis(null);
+                }}
+                title="Clear Cached Audit"
+                className="rounded-lg p-1.5 text-zinc-500 hover:bg-white/[0.04] hover:text-white transition"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </motion.div>
+        )}
 
         <div className="mt-5 grid gap-4 lg:grid-cols-12">
           <div className="lg:col-span-7">
@@ -323,20 +411,30 @@ export default function AnalyzePage() {
               </div>
             </div>
 
-            {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-3 gap-3 w-full lg:w-auto shrink-0">
-              <div className="glass-card rounded-xl border border-white/[0.05] p-3 text-center bg-zinc-905/30 min-w-[90px]">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 block">Severe</span>
-                <span className="text-base font-bold text-red-400 mt-0.5 block">{stats.criticalCount}</span>
+            {/* Quick Metrics Bar + Re-run Action */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto shrink-0">
+              <div className="grid grid-cols-3 gap-3 w-full sm:w-auto">
+                <div className="glass-card rounded-xl border border-white/[0.05] p-3 text-center bg-zinc-905/30 min-w-[90px]">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 block">Severe</span>
+                  <span className="text-base font-bold text-red-400 mt-0.5 block">{stats.criticalCount}</span>
+                </div>
+                <div className="glass-card rounded-xl border border-white/[0.05] p-3 text-center bg-zinc-905/30 min-w-[90px]">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 block">Total Issues</span>
+                  <span className="text-base font-bold text-zinc-300 mt-0.5 block">{stats.totalFindings}</span>
+                </div>
+                <div className="glass-card rounded-xl border border-white/[0.05] p-3 text-center bg-zinc-905/30 min-w-[90px]">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 block">Fixes Ready</span>
+                  <span className="text-base font-bold text-emerald-400 mt-0.5 block">{stats.fixCount}</span>
+                </div>
               </div>
-              <div className="glass-card rounded-xl border border-white/[0.05] p-3 text-center bg-zinc-905/30 min-w-[90px]">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 block">Total Issues</span>
-                <span className="text-base font-bold text-zinc-300 mt-0.5 block">{stats.totalFindings}</span>
-              </div>
-              <div className="glass-card rounded-xl border border-white/[0.05] p-3 text-center bg-zinc-905/30 min-w-[90px]">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 block">Fixes Ready</span>
-                <span className="text-base font-bold text-emerald-400 mt-0.5 block">{stats.fixCount}</span>
-              </div>
+
+              <button
+                type="button"
+                onClick={() => runAnalyze({ skipCache: true })}
+                className="w-full sm:w-auto shrink-0 rounded-xl bg-zinc-900/60 border border-white/[0.08] px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-300 hover:border-emerald-500/20 hover:text-white transition active:scale-[0.98]"
+              >
+                Re-run Scan
+              </button>
             </div>
           </div>
 
