@@ -218,72 +218,6 @@ export default function AnalyzePage() {
           repos.
         </p>
 
-        {cachedAnalysis && status !== "loading" && status !== "success" && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.03] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-left shadow-[0_0_20px_rgba(52,211,153,0.03)]"
-          >
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] text-emerald-400 border border-emerald-500/30">
-                ✓
-              </span>
-              <div>
-                <p className="text-xs font-bold text-emerald-300">
-                  Cached Audit Result Found
-                </p>
-                <p className="mt-1 text-[11px] text-zinc-400 leading-normal">
-                  A previous security audit for this repository exists. Health Score:{" "}
-                  <span className="font-mono font-bold text-white">
-                    {cachedAnalysis.health_score}
-                  </span>
-                  /100 · Risk:{" "}
-                  <span className={`font-bold ${
-                    cachedAnalysis.risk_level === "high" ? "text-red-400" :
-                    cachedAnalysis.risk_level === "medium" ? "text-amber-400" : "text-emerald-400"
-                  }`}>
-                    {(cachedAnalysis.risk_level || "unknown").toUpperCase()}
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  setData(cachedAnalysis);
-                  setStatus("success");
-                  setError(null);
-                }}
-                className="rounded-lg border border-white/[0.08] bg-zinc-900/60 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-300 hover:border-white/20 hover:text-white transition active:scale-95"
-              >
-                Load Audit
-              </button>
-              <button
-                type="button"
-                onClick={() => runAnalyze({ skipCache: true })}
-                className="rounded-lg bg-gradient-to-r from-emerald-400 to-cyan-400 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-950 hover:opacity-95 shadow-sm transition active:scale-95"
-              >
-                Re-run Scan
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const key = cacheKey(parsed.full_name, refBranch);
-                  sessionStorage.removeItem(key);
-                  setCachedAnalysis(null);
-                }}
-                title="Clear Cached Audit"
-                className="rounded-lg p-1.5 text-zinc-500 hover:bg-white/[0.04] hover:text-white transition"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </div>
-          </motion.div>
-        )}
-
         <div className="mt-5 grid gap-4 lg:grid-cols-12">
           <div className="lg:col-span-7">
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
@@ -331,23 +265,53 @@ export default function AnalyzePage() {
           />
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-3">
-          <button
-            type="button"
-            disabled={!parsed.ok || status === "loading"}
-            onClick={() => runAnalyze({ skipCache: false })}
-            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-5 py-2.5 text-sm font-semibold text-zinc-950 shadow-lg shadow-emerald-500/15 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {status === "loading" ? "Cooking Analysis…" : "Run analysis"}
-          </button>
-          <button
-            type="button"
-            disabled={!parsed.ok || status === "loading"}
-            onClick={() => runAnalyze({ skipCache: true })}
-            className="rounded-xl border border-white/[0.1] px-4 py-2.5 text-sm font-medium text-zinc-300 transition hover:border-emerald-500/25 hover:text-white disabled:opacity-40"
-          >
-            Refresh (skip cache)
-          </button>
+        {/* Dynamic Simplified Action Buttons */}
+        <div className="mt-6 border-t border-white/[0.04] pt-5">
+          {cachedAnalysis && status !== "loading" && status !== "success" ? (
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-2 rounded-lg bg-emerald-500/[0.03] border border-emerald-500/20 px-3.5 py-2.5 text-xs">
+                <span className="text-emerald-400">✓</span>
+                <span className="text-zinc-300">
+                  Cached audit found: Score <span className="font-bold text-white font-mono">{cachedAnalysis.health_score}</span>/100 · Risk:{" "}
+                  <span className={`font-bold ${
+                    cachedAnalysis.risk_level === "high" ? "text-red-400" :
+                    cachedAnalysis.risk_level === "medium" ? "text-amber-400" : "text-emerald-400"
+                  }`}>
+                    {(cachedAnalysis.risk_level || "unknown").toUpperCase()}
+                  </span>
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setData(cachedAnalysis);
+                    setStatus("success");
+                    setError(null);
+                  }}
+                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-950 shadow-lg shadow-emerald-500/15 transition hover:opacity-95 active:scale-[0.98]"
+                >
+                  Load Cached Audit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => runAnalyze({ skipCache: true })}
+                  className="rounded-xl border border-white/[0.1] bg-zinc-900/40 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-300 transition hover:border-white/20 hover:text-white active:scale-[0.98]"
+                >
+                  Run Fresh Scan
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              disabled={!parsed.ok || status === "loading"}
+              onClick={() => runAnalyze({ skipCache: false })}
+              className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-950 shadow-lg shadow-emerald-500/15 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40 active:scale-[0.98]"
+            >
+              {status === "loading" ? "Cooking Analysis…" : "Run analysis"}
+            </button>
+          )}
         </div>
       </section>
 
