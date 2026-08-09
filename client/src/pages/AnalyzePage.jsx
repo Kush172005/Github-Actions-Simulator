@@ -6,7 +6,7 @@ import { postAnalyzeRepo } from "../lib/api.js";
 import { cacheKey, parseRepoInput } from "../lib/repoInput.js";
 import { safePlainText } from "../lib/sanitize.js";
 import { DashboardLayout } from "../components/dashboard/DashboardLayout.jsx";
-import { AnalyzeSkeleton } from "../components/analyze/AnalyzeSkeleton.jsx";
+import { ScanningScreen } from "../components/analyze/ScanningScreen.jsx";
 import { HealthScoreRing } from "../components/analyze/HealthScoreRing.jsx";
 import { RiskBadge } from "../components/analyze/RiskBadge.jsx";
 import { InsightCard } from "../components/analyze/InsightCard.jsx";
@@ -15,6 +15,7 @@ import { FixList } from "../components/analyze/FixList.jsx";
 import { WorkflowSection } from "../components/analyze/WorkflowSection.jsx";
 import { DependencySection } from "../components/analyze/DependencySection.jsx";
 import { SetupGuide } from "../components/analyze/SetupGuide.jsx";
+import { detectProjectStack } from "../lib/projectDetect.js";
 
 const ghClientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
 const redirectUri =
@@ -34,6 +35,32 @@ export default function AnalyzePage() {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
+
+  const stack = useMemo(() => {
+    if (!data || !data.analyzers) return null;
+    return detectProjectStack(data.analyzers);
+  }, [data]);
+
+  const stats = useMemo(() => {
+    if (!data || !data.analyzers) return { criticalCount: 0, totalFindings: 0, fixCount: 0 };
+    let criticalCount = 0;
+    let totalFindings = 0;
+    data.analyzers.forEach((a) => {
+      if (a.findings) {
+        totalFindings += a.findings.length;
+        a.findings.forEach((f) => {
+          if (f.severity === "critical" || f.severity === "high") {
+            criticalCount++;
+          }
+        });
+      }
+    });
+    return {
+      criticalCount,
+      totalFindings,
+      fixCount: (data.fix_suggestions || []).length,
+    };
+  }, [data]);
 
   const abortRef = useRef(null);
   const resultsRef = useRef(null);
@@ -223,7 +250,7 @@ export default function AnalyzePage() {
             onClick={() => runAnalyze({ skipCache: false })}
             className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-5 py-2.5 text-sm font-semibold text-zinc-950 shadow-lg shadow-emerald-500/15 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {status === "loading" ? "Analyzing…" : "Run analysis"}
+            {status === "loading" ? "Cooking Analysis…" : "Run analysis"}
           </button>
           <button
             type="button"
@@ -242,7 +269,10 @@ export default function AnalyzePage() {
           animate={{ opacity: 1 }}
           className="mt-8"
         >
-          <AnalyzeSkeleton />
+          <ScanningScreen
+            repositoryName={parsed.full_name || "Repository"}
+            refBranch={refBranch}
+          />
         </motion.div>
       )}
 
@@ -264,7 +294,7 @@ export default function AnalyzePage() {
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           className="mt-10 space-y-10 scroll-mt-24"
         >
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between border-b border-white/[0.04] pb-6">
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
               <HealthScoreRing score={data.health_score} />
               <div>
@@ -273,6 +303,13 @@ export default function AnalyzePage() {
                     {safePlainText(data.repository)}
                   </h2>
                   <RiskBadge level={data.risk_level} />
+                  {stack && (
+                    <span className="shrink-0 rounded-lg border border-white/[0.06] bg-zinc-900/60 px-2.5 py-0.5 text-[11px] font-semibold">
+                      <span className={`bg-gradient-to-r ${stack.color} bg-clip-text text-transparent`}>
+                        {stack.icon} {stack.name} Project
+                      </span>
+                    </span>
+                  )}
                 </div>
                 <p className="mt-2 text-xs text-zinc-500">
                   <span className="text-zinc-400">Default branch:</span>{" "}
@@ -283,6 +320,22 @@ export default function AnalyzePage() {
                     {safePlainText(data.commit_sha).slice(0, 7)}
                   </span>
                 </p>
+              </div>
+            </div>
+
+            {/* Quick Metrics Bar */}
+            <div className="grid grid-cols-3 gap-3 w-full lg:w-auto shrink-0">
+              <div className="glass-card rounded-xl border border-white/[0.05] p-3 text-center bg-zinc-905/30 min-w-[90px]">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 block">Severe</span>
+                <span className="text-base font-bold text-red-400 mt-0.5 block">{stats.criticalCount}</span>
+              </div>
+              <div className="glass-card rounded-xl border border-white/[0.05] p-3 text-center bg-zinc-905/30 min-w-[90px]">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 block">Total Issues</span>
+                <span className="text-base font-bold text-zinc-300 mt-0.5 block">{stats.totalFindings}</span>
+              </div>
+              <div className="glass-card rounded-xl border border-white/[0.05] p-3 text-center bg-zinc-905/30 min-w-[90px]">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 block">Fixes Ready</span>
+                <span className="text-base font-bold text-emerald-400 mt-0.5 block">{stats.fixCount}</span>
               </div>
             </div>
           </div>

@@ -361,3 +361,20 @@
     animation-timing-function: ease-in-out !important;
   }
 }
+
+/* Custom scanline sweeper */
+@keyframes scanline {
+  0% {
+    top: 0%;
+  }
+  50% {
+    top: 100%;
+  }
+  100% {
+    top: 0%;
+  }
+}
+
+.animate-scanline {
+  animation: scanline 6s linear infinite;
+}

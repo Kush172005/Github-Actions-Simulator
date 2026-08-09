@@ -17,9 +17,26 @@ export default function DashboardPage() {
   const [repos, setRepos] = useState([]);
   const [reposLoading, setReposLoading] = useState(true);
   const [reposError, setReposError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  
   /** Avoid skeleton flash on refetch — only show shimmer when we have no rows yet. */
   const hadReposRef = useRef(false);
   const prevUserIdRef = useRef(undefined);
+
+  const filteredRepos = repos.filter((repo) => {
+    const matchesSearch =
+      (repo.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (repo.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (activeTab === "public") return matchesSearch && !repo.private;
+    if (activeTab === "private") return matchesSearch && repo.private;
+    return matchesSearch;
+  });
+
+  const totalCount = repos.length;
+  const publicCount = repos.filter(r => !r.private).length;
+  const privateCount = repos.filter(r => r.private).length;
 
   const loadRepos = useCallback(async () => {
     if (!user?.github_connected) {
@@ -125,7 +142,7 @@ export default function DashboardPage() {
             </motion.div>
           ) : (
             <>
-              <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
+              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/[0.04] pb-4">
                 <div>
                   <h2 className="text-lg font-semibold text-zinc-100">
                     Repositories
@@ -134,7 +151,29 @@ export default function DashboardPage() {
                     Pulled live from GitHub · sorted by last push
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="relative min-w-[180px] sm:min-w-[240px]">
+                    <span className="absolute inset-y-0 left-3 flex items-center text-zinc-500 pointer-events-none">
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="Search repositories..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full rounded-xl border border-white/[0.08] bg-black/40 pl-9 pr-4 py-1.5 text-xs text-zinc-100 placeholder-zinc-500 outline-none transition focus:border-emerald-500/35 focus:ring-1 focus:ring-emerald-500/20"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-white"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                   <Link
                     to="/dashboard/analyze"
                     className="rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-semibold text-emerald-200 no-underline transition hover:border-emerald-400/40"
@@ -150,6 +189,37 @@ export default function DashboardPage() {
                   </button>
                 </div>
               </div>
+
+              {/* Filtering Tabs */}
+              {!reposLoading && repos.length > 0 && (
+                <div className="mb-4 flex border-b border-white/[0.04] p-0.5">
+                  {[
+                    { id: "all", label: "All", count: totalCount },
+                    { id: "public", label: "Public", count: publicCount },
+                    { id: "private", label: "Private", count: privateCount },
+                  ].map((tab) => {
+                    const active = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`relative flex items-center gap-1.5 px-4 py-2 text-xs font-semibold border-b-2 transition-all ${
+                          active
+                            ? "border-emerald-400 text-white"
+                            : "border-transparent text-zinc-400 hover:text-zinc-200"
+                        }`}
+                      >
+                        {tab.label}
+                        <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${
+                          active ? "bg-emerald-500/20 text-emerald-300" : "bg-zinc-800 text-zinc-500"
+                        }`}>
+                          {tab.count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               {reposLoading && (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -172,9 +242,21 @@ export default function DashboardPage() {
                 <p className="text-sm text-zinc-500">No repositories found.</p>
               )}
 
-              {!reposLoading && repos.length > 0 && (
+              {!reposLoading && !reposError && repos.length > 0 && filteredRepos.length === 0 && (
+                <div className="rounded-xl border border-dashed border-white/[0.08] p-8 text-center bg-zinc-900/10">
+                  <p className="text-sm text-zinc-400">No repositories match your search query.</p>
+                  <button
+                    onClick={() => { setSearchQuery(""); setActiveTab("all"); }}
+                    className="mt-3 text-xs text-emerald-400 underline hover:text-emerald-300"
+                  >
+                    Clear search and filters
+                  </button>
+                </div>
+              )}
+
+              {!reposLoading && filteredRepos.length > 0 && (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {repos.map((repo, i) => (
+                  {filteredRepos.map((repo, i) => (
                     <RepoCard key={repo.id} repo={repo} index={i} />
                   ))}
                 </div>
