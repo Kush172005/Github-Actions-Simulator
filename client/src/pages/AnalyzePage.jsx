@@ -291,7 +291,7 @@ export default function AnalyzePage() {
                   }}
                   className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-950 shadow-lg shadow-emerald-500/15 transition hover:opacity-95 active:scale-[0.98]"
                 >
-                  Load Cached Audit
+                  Load Cached Audit Data
                 </button>
                 <button
                   type="button"
