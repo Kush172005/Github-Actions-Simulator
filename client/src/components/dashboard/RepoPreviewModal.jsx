@@ -49,6 +49,7 @@ export function RepoPreviewModal({ repo, onClose }) {
     : "Never";
 
   const analyzeTo = `/dashboard/analyze?repo=${encodeURIComponent(repo.full_name || repo.name || "")}`;
+  const runsTo = `/dashboard/runs?repo=${encodeURIComponent(repo.full_name || repo.name || "")}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -177,21 +178,32 @@ export function RepoPreviewModal({ repo, onClose }) {
         </div>
 
         {/* Action Button Row */}
-        <div className="mt-6 pt-5 border-t border-white/[0.05] flex gap-3">
+        <div className="mt-6 pt-5 border-t border-white/[0.05] flex flex-col gap-2.5">
           <Link
             to={analyzeTo}
-            className="flex-1 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-950 shadow-lg shadow-emerald-500/15 transition hover:opacity-95 text-center no-underline border border-transparent active:scale-[0.98]"
+            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-950 shadow-lg shadow-emerald-500/15 transition hover:opacity-95 text-center no-underline border border-transparent active:scale-[0.98]"
           >
             Launch Deep AI Audit
           </Link>
-          <a
-            href={repo.html_url}
-            target="_blank"
-            rel="noreferrer"
-            className="flex-1 inline-flex items-center justify-center rounded-xl border border-white/[0.08] bg-zinc-900/40 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-300 transition hover:border-white/20 hover:text-white text-center no-underline active:scale-[0.98]"
-          >
-            Open on GitHub
-          </a>
+          <div className="flex gap-2.5">
+            <Link
+              to={runsTo}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/[0.08] bg-zinc-900/40 py-2 text-xs font-bold uppercase tracking-wider text-zinc-300 transition hover:border-emerald-500/25 hover:text-white text-center no-underline active:scale-[0.98]"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Actions Runs
+            </Link>
+            <a
+              href={repo.html_url}
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 inline-flex items-center justify-center rounded-xl border border-white/[0.08] bg-zinc-900/40 py-2 text-xs font-bold uppercase tracking-wider text-zinc-300 transition hover:border-white/20 hover:text-white text-center no-underline active:scale-[0.98]"
+            >
+              Open on GitHub
+            </a>
+          </div>
         </div>
       </motion.div>
     </div>

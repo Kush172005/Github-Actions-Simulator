@@ -23,9 +23,16 @@ import httpx
 import structlog
 from pydantic import BaseModel, ValidationError
 
-from app.ai.prompts import INSIGHT_SYSTEM, LOG_SYSTEM, insight_user_payload, log_user_payload
-from app.ai.sanitize import sanitize_insight_bundle, sanitize_log_explanation
-from app.ai.schemas import InsightBundle, LogExplanation
+from app.ai.prompts import (
+    INSIGHT_SYSTEM,
+    LOG_SYSTEM,
+    RUN_SYSTEM,
+    insight_user_payload,
+    log_user_payload,
+    run_user_payload,
+)
+from app.ai.sanitize import sanitize_insight_bundle, sanitize_log_explanation, sanitize_run_diagnosis
+from app.ai.schemas import InsightBundle, LogExplanation, RunDiagnosis
 from app.config import Settings, get_settings
 
 logger = structlog.get_logger(__name__)
@@ -592,3 +599,53 @@ class AIClient:
                 )
 
         raise RuntimeError(f"All models failed for log explanation: {last_err}")
+
+    async def explain_run(self, repo_full_name: str, run_data_json: str) -> RunDiagnosis:
+        """Produce a correlated diagnosis for a completed GitHub Actions run."""
+        user = run_user_payload(repo_full_name, run_data_json)
+        last_err: Exception | None = None
+
+        or_key = self._or_key()
+        hf_key = self._hf_key()
+
+        all_models: list[tuple[str, str]] = []
+        if or_key:
+            all_models += [("openrouter", m) for m in _OR_MODELS]
+        if hf_key:
+            all_models += [("huggingface", m) for m in _HF_MODELS]
+
+        for provider, model_id in all_models:
+            try:
+                logger.info("run_explain_trying_model", provider=provider, model=model_id)
+                if provider == "openrouter":
+                    raw = await self._openrouter_with_retries(model_id, RUN_SYSTEM, user)
+                else:
+                    raw = await self._hf_with_retries(model_id, RUN_SYSTEM, user)
+                data = _extract_json_object(raw)
+                obj = RunDiagnosis.model_validate(data)
+                result = sanitize_run_diagnosis(obj)
+                logger.info(
+                    "run_explain_succeeded",
+                    provider=provider,
+                    model=model_id,
+                    confidence=result.confidence,
+                )
+                return result
+            except (ValidationError, ValueError, json.JSONDecodeError) as e:
+                last_err = e
+                logger.warning(
+                    "run_explain_json_invalid",
+                    provider=provider,
+                    model=model_id,
+                    err=str(e),
+                )
+            except Exception as e:
+                last_err = e
+                logger.warning(
+                    "run_explain_model_failed",
+                    provider=provider,
+                    model=model_id,
+                    err=str(e),
+                )
+
+        raise RuntimeError(f"All models failed for run diagnosis: {last_err}")

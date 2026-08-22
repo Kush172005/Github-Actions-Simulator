@@ -181,6 +181,43 @@ async def get_branch_tip_tree_sha(
         raise _map_httpx_error(e) from e
 
 
+async def get_commit_tree_sha(
+    client: httpx.AsyncClient,
+    owner: str,
+    repo: str,
+    commit_ref: str,
+    access_token: str | None,
+    settings: Settings | None = None,
+) -> tuple[str, str]:
+    """Return (commit_sha, tree_sha) for a commit SHA or short SHA via Commits API."""
+    s = settings or get_settings()
+    url = f"https://api.github.com/repos/{owner}/{repo}/commits/{commit_ref}"
+    try:
+        r = await client.get(url, headers=_headers(access_token), timeout=s.github_analyze_timeout_s)
+        r.raise_for_status()
+        data = r.json()
+        commit_sha = (data.get("sha") or "").strip()
+        commit_obj = data.get("commit") or {}
+        tree = commit_obj.get("tree") if isinstance(commit_obj, dict) else None
+        tree_sha = (tree.get("sha") or "").strip() if isinstance(tree, dict) else ""
+        if commit_sha and not tree_sha:
+            tree_sha = await _fetch_tree_sha_via_git_commit(
+                client, owner, repo, commit_sha, access_token, s
+            )
+        if not commit_sha or not tree_sha:
+            raise GitHubRepoError("github_error", "Unexpected commit response from GitHub", 502)
+        return commit_sha, tree_sha
+    except httpx.HTTPStatusError as e:
+        raise _map_httpx_error(e) from e
+
+
+_SHA_RE = re.compile(r"^[0-9a-fA-F]{7,40}$")
+
+
+def looks_like_commit_sha(ref: str | None) -> bool:
+    return bool(ref and _SHA_RE.match(ref.strip()))
+
+
 async def get_tree_recursive(
     client: httpx.AsyncClient,
     owner: str,

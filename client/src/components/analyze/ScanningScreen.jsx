@@ -1,20 +1,22 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function ScanningScreen({ repositoryName, refBranch }) {
+const DEFAULT_STATUS_MESSAGES = [
+  "Establishing secure repository gateway...",
+  "Tracing file tree topology...",
+  "Inspecting configuration manifest schemas...",
+  "Scanning GitHub Action workflows...",
+  "Querying package registry ecosystems...",
+  "Deploying OpenRouter reasoning contexts...",
+  "Structuring deep SRE vulnerability mapping...",
+  "Brewing final intelligence report...",
+];
+
+export function ScanningScreen({ repositoryName, refBranch, statusMessages: customMessages }) {
   const [progress, setProgress] = useState(0);
   const [statusIdx, setStatusIdx] = useState(0);
 
-  const statusMessages = [
-    "Establishing secure repository gateway...",
-    "Tracing file tree topology...",
-    "Inspecting configuration manifest schemas...",
-    "Scanning GitHub Action workflows...",
-    "Querying package registry ecosystems...",
-    "Deploying OpenRouter reasoning contexts...",
-    "Structuring deep SRE vulnerability mapping...",
-    "Brewing final intelligence report...",
-  ];
+  const statusMessages = customMessages || DEFAULT_STATUS_MESSAGES;
 
   // 1. Smooth progress simulation (stops at 99% until backend responds)
   useEffect(() => {
@@ -45,7 +47,7 @@ export function ScanningScreen({ repositoryName, refBranch }) {
     }, 2800);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [statusMessages.length]);
 
   return (
     <div className="mx-auto mt-6 max-w-2xl overflow-hidden rounded-2xl border border-white/[0.06] bg-[#09090b]/80 backdrop-blur-xl p-8 text-center relative shadow-2xl">

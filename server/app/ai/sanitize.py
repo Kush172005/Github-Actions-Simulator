@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from app.ai.schemas import InsightBundle, LogExplanation
+from app.ai.schemas import InsightBundle, LogExplanation, RunDiagnosis
 
 
 _CTRL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
@@ -57,6 +57,28 @@ def sanitize_log_explanation(obj: LogExplanation) -> LogExplanation:
         explanation=_clean_str(obj.explanation, 4000),
         fix=_clean_str(obj.fix, 4000),
         confidence=max(0.0, min(1.0, float(obj.confidence))),
+    )
+
+
+def sanitize_run_diagnosis(obj: RunDiagnosis) -> RunDiagnosis:
+    from app.ai.schemas import CorrelationItem
+    return RunDiagnosis(
+        root_cause=_clean_str(obj.root_cause, 2000),
+        explanation=_clean_str(obj.explanation, 5000),
+        fix=_clean_str(obj.fix, 5000),
+        confidence=max(0.0, min(1.0, float(obj.confidence))),
+        affected_job=_clean_str(obj.affected_job, 500) if obj.affected_job else None,
+        affected_step=_clean_str(obj.affected_step, 500) if obj.affected_step else None,
+        what_worked=[_clean_str(w, 500) for w in (obj.what_worked or [])[:20]],
+        warnings=[_clean_str(w, 500) for w in (obj.warnings or [])[:20]],
+        correlations=[
+            CorrelationItem(
+                title=_clean_str(c.title, 300),
+                detail=_clean_str(c.detail, 2000),
+                evidence=c.evidence if isinstance(c.evidence, dict) else {},
+            )
+            for c in (obj.correlations or [])[:10]
+        ],
     )
 
 

@@ -12,9 +12,11 @@ from app.services.github_contents import (
     GitHubRepoError,
     get_blob_text,
     get_branch_tip_tree_sha,
+    get_commit_tree_sha,
     get_repo_meta,
     get_tree_recursive,
     index_git_tree,
+    looks_like_commit_sha,
     parse_github_repo_input,
 )
 logger = structlog.get_logger(__name__)
@@ -117,9 +119,19 @@ async def build_repo_context(
     async def meta_and_tree(token: str | None):
         meta = await get_repo_meta(client, owner, repo, token, s)
         branch = ref or meta.get("default_branch") or "main"
-        commit_sha, tree_sha = await get_branch_tip_tree_sha(client, owner, repo, branch, token, s)
+        if looks_like_commit_sha(branch):
+            commit_sha, tree_sha = await get_commit_tree_sha(
+                client, owner, repo, branch, token, s
+            )
+            # Keep the SHA as resolved_branch so callers know we pinned to a commit
+            resolved = commit_sha
+        else:
+            commit_sha, tree_sha = await get_branch_tip_tree_sha(
+                client, owner, repo, branch, token, s
+            )
+            resolved = branch
         tree_items, truncated = await get_tree_recursive(client, owner, repo, tree_sha, token, s)
-        return meta, branch, commit_sha, tree_items, truncated
+        return meta, resolved, commit_sha, tree_items, truncated
 
     effective_token: str | None = access_token
     if access_token:

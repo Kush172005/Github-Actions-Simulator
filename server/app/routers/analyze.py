@@ -12,6 +12,7 @@ from app.analyzers.pipeline import run_pipeline
 from app.config import get_settings
 from app.dependencies import get_current_user_doc
 from app.engines import insight_engine, log_engine
+from app.engines.run_engine import analyze_run
 from app.engines.scoring import compute_score_and_risk
 from app.schemas.analyze import (
     AnalyzeRequest,
@@ -23,7 +24,8 @@ from app.schemas.analyze import (
     LogExplanationOut,
     SetupOut,
 )
-from app.services.github_contents import GitHubRepoError
+from app.schemas.run_analyze import RunAnalyzeRequest, RunAnalyzeResponse
+from app.services.github_contents import GitHubRepoError, parse_github_repo_input
 
 logger = structlog.get_logger(__name__)
 
@@ -154,3 +156,54 @@ async def analyze_repo(
             else None
         ),
     )
+
+
+@router.post("/analyze/run", response_model=RunAnalyzeResponse)
+async def analyze_actions_run(
+    request: Request,
+    body: RunAnalyzeRequest,
+    user: Annotated[dict, Depends(get_current_user_doc)],
+):
+    """Analyze a completed GitHub Actions workflow run."""
+    if not _ai_configured():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "AI is not configured — set OPENROUTER_API_KEY or HUGGINGFACE_API_KEY in your .env file"
+            ),
+        )
+
+    client = getattr(request.app.state, "http_client", None)
+    if client is None:
+        raise HTTPException(status_code=500, detail="HTTP client not initialized")
+
+    token = user.get("github_access_token")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Connect GitHub to analyze Actions runs",
+        )
+
+    try:
+        owner, repo = parse_github_repo_input(body.repo_url, body.full_name)
+    except (GitHubRepoError, ValueError) as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    ai = AIClient()
+    try:
+        result = await analyze_run(
+            client=client,
+            owner=owner,
+            repo=repo,
+            run_id=body.run_id,
+            access_token=token,
+            ai_client=ai,
+        )
+    except GitHubRepoError as e:
+        logger.warning("analyze_run_github_error", code=e.code, status=e.status_code)
+        raise HTTPException(status_code=e.status_code or 400, detail=e.message) from e
+    except Exception as e:
+        logger.exception("analyze_run_failed", err=str(e))
+        raise HTTPException(status_code=502, detail=f"Run analysis failed: {e}") from e
+
+    return result

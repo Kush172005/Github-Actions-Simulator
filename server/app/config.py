@@ -69,6 +69,11 @@ class Settings(BaseSettings):
     analyze_max_workflow_files: int = 32
     analyze_max_workflow_bytes: int = 256_000
 
+    # GitHub Actions run analysis
+    actions_runs_per_page: int = 15
+    actions_max_job_logs: int = 2
+    actions_max_log_archive_bytes: int = 5_000_000  # 5 MB per job log archive
+
     @property
     def cors_origin_list(self) -> List[str]:
         # Origin header never includes a trailing slash; strip so env typos still match.

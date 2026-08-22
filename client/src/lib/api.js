@@ -90,3 +90,33 @@ export async function postAnalyzeRepo(body, opts = {}) {
     signal: opts.signal,
   });
 }
+
+/**
+ * @param {string} owner
+ * @param {string} repo
+ * @param {{ signal?: AbortSignal, page?: number }} [opts]
+ * @returns {Promise<{ runs: any[], page: number, per_page: number, total_count: number, has_more: boolean }>}
+ */
+export async function fetchActionRuns(owner, repo, opts = {}) {
+  if (!owner || !repo || owner === "undefined" || repo === "undefined") {
+    throw new Error("Invalid repository — provide owner/repo");
+  }
+  const page = Math.max(1, opts.page || 1);
+  const qs = page > 1 ? `?page=${page}` : "";
+  return apiFetch(
+    `/api/github/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/actions/runs${qs}`,
+    { signal: opts.signal },
+  );
+}
+
+/**
+ * @param {{ full_name?: string, repo_url?: string, run_id: number }} body
+ * @param {{ signal?: AbortSignal }} [opts]
+ */
+export async function postAnalyzeRun(body, opts = {}) {
+  return apiFetch("/api/analyze/run", {
+    method: "POST",
+    body: JSON.stringify(body),
+    signal: opts.signal,
+  });
+}

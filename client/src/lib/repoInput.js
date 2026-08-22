@@ -1,6 +1,6 @@
 const GH_HOST = /^(https?:\/\/)?(www\.)?github\.com\//i;
 
-/** @returns {{ ok: boolean, full_name?: string, error?: string }} */
+/** @returns {{ ok: boolean, owner?: string, repo?: string, full_name?: string, error?: string }} */
 export function parseRepoInput(raw) {
   const s = (raw || "").trim();
   if (!s) return { ok: false, error: "Enter a GitHub repository URL or owner/name" };
@@ -34,7 +34,7 @@ export function parseRepoInput(raw) {
       if (!/^[a-zA-Z0-9_.-]+$/.test(owner) || !/^[a-zA-Z0-9_.-]+$/.test(repo)) {
         return { ok: false, error: "Invalid owner or repository name" };
       }
-      return { ok: true, full_name: `${owner}/${repo}` };
+      return { ok: true, owner, repo, full_name: `${owner}/${repo}` };
     } catch {
       return { ok: false, error: "Invalid URL" };
     }
@@ -49,7 +49,7 @@ export function parseRepoInput(raw) {
     if (!/^[a-zA-Z0-9_.-]+$/.test(owner) || !/^[a-zA-Z0-9_.-]+$/.test(r)) {
       return { ok: false, error: "Invalid owner or repository name" };
     }
-    return { ok: true, full_name: `${owner}/${r}` };
+    return { ok: true, owner, repo: r, full_name: `${owner}/${r}` };
   }
 
   return { ok: false, error: "Invalid input" };

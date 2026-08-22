@@ -193,15 +193,28 @@ export default function AnalyzePage() {
       onLogout={logout}
       onConnectGitHub={connectGitHub}
     >
-      <div className="mb-6 flex flex-wrap items-center gap-3 text-xs">
-        <Link
-          to="/dashboard"
-          className="rounded-lg border border-white/[0.08] px-3 py-1.5 font-medium text-zinc-400 no-underline transition hover:border-emerald-500/25 hover:text-zinc-200"
-        >
-          Repositories
-        </Link>
-        <span className="text-zinc-600">/</span>
-        <span className="font-semibold text-zinc-200">Analyze</span>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/dashboard"
+            className="rounded-lg border border-white/[0.08] px-3 py-1.5 font-medium text-zinc-400 no-underline transition hover:border-emerald-500/25 hover:text-zinc-200"
+          >
+            Repositories
+          </Link>
+          <span className="text-zinc-600">/</span>
+          <span className="font-semibold text-zinc-200">Analyze</span>
+        </div>
+        {parsed.ok && (
+          <Link
+            to={`/dashboard/runs?repo=${encodeURIComponent(parsed.full_name)}`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 font-medium text-zinc-400 no-underline transition hover:border-emerald-500/25 hover:text-zinc-200"
+          >
+            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Actions runs
+          </Link>
+        )}
       </div>
 
       <section

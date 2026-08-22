@@ -16,6 +16,7 @@ function formatDate(iso) {
 export function RepoCard({ repo, index, onOpenDetails }) {
   const href = repo.html_url || "#";
   const analyzeTo = `/dashboard/analyze?repo=${encodeURIComponent(repo.full_name || repo.name || "")}`;
+  const runsTo = `/dashboard/runs?repo=${encodeURIComponent(repo.full_name || repo.name || "")}`;
 
   return (
     <motion.div
@@ -84,6 +85,16 @@ export function RepoCard({ repo, index, onOpenDetails }) {
           className="inline-flex flex-1 items-center justify-center rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-200 no-underline transition hover:bg-emerald-500/20 active:scale-[0.98]"
         >
           Quick Analyze
+        </Link>
+        <Link
+          to={runsTo}
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex items-center justify-center rounded-lg border border-white/[0.08] px-2 py-1.5 text-[10px] font-semibold text-zinc-400 no-underline transition hover:border-white/20 hover:text-zinc-200 active:scale-[0.98]"
+          title="View Actions runs"
+        >
+          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
         </Link>
         <button
           type="button"
