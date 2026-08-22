@@ -24,9 +24,9 @@
 
 Setting up CI/CD workflows and securing package dependency trees is a slow, error-prone cycle. Developers write a GitHub Actions workflow, push a commit to their remote branch, wait 3 minutes for a runner to boot, only for it to fail on an unpinned environment variable, a mismatched node engine, or an unpinned runner OS. 
 
-Furthermore, when runs fail, developers are confronted with thousands of lines of raw, cluttered terminal stdout. Finding the root cause — let alone figuring out the exact security configuration patch to fix it — requires hunting through stack traces, Docker logs, and registry APIs.
+Furthermore, when runs fail, developers are confronted with thousands of lines of raw, cluttered terminal stdout. Finding the root cause — let alone figuring out the exact security configuration patch to fix it — requires hunting through stack traces, Docker logs, and registry APIs. Jumping between GitHub’s Actions UI and a separate diagnostic tool breaks flow even further.
 
-Vulnerabilities, loose supply-chain permissions, and misconfigured workflows shouldn't wait for remote pipelines or IC meetings to surface. They need to be **analyzed, identified, and resolved locally before a PR is even opened**.
+Vulnerabilities, loose supply-chain permissions, and misconfigured workflows shouldn't wait for remote pipelines or IC meetings to surface. They need to be **analyzed, identified, and resolved locally before a PR is even opened** — and when a run already failed, the diagnosis should use that run’s jobs and logs **in context of the repository**, not as an isolated log dump.
 
 ---
 
@@ -36,16 +36,19 @@ ShipStack is a local diagnostic workspace for GitHub repositories. It pulls live
 
 If your build has failed, paste the raw build terminal output into the diagnostic panel — the AI analyzer identifies the root cause and generates immediate, copyable fix configurations (YAML, bash scripts, or code blocks) using a fallback-resilient LLM orchestration pipeline.
 
+ShipStack can also pull **completed GitHub Actions runs** directly: list recent CI executions, fetch targeted job logs, and correlate runtime failures with the same static workflow and dependency findings — so you get a root-cause report without leaving the product or dumping multi-megabyte logs into an LLM.
+
 | Capability | Description |
 |---|---|
 | **Ecosystem Profiling** | Detects repository configurations (e.g. Next.js, React/Vite, Node.js, Python/FastAPI, Go, Rust, Docker) to deliver targeted, framework-specific recommendations. |
 | **CI/CD Security Audit** | Scans GitHub Actions workflow parameters. Flags floating action references (unpinned tags), loose permissions, and unoptimized runners. |
+| **Actions Run Analysis** | Lists recent workflow runs (paginated), analyzes a completed run’s jobs/steps/logs, and correlates failures with static YAML and dependency findings for an exact fix. |
 | **Dependency Health Scan** | Scans dependency lockfiles and manifests, checks for unpinned versions, mixed managers, and estimates supply chain vulnerability risks. |
 | **Pulsing Waiting Screen** | Integrates a relaxing, cinematic scanning screen featuring a pulsing quantum core, circular radar grids, and percentage indicators to occupy the user during remote inference steps. |
 | **Diagnostics Overlay** | Displays estimated repository health scores (0-100), estimated risk ratings (LOW/MEDIUM/HIGH), and quick metric counts for severe alerts. |
 | **Actionable Fix Accordion** | Suggestions are grouped into collapsible cards with priority sliders. Every fix contains an exact, copyable code block or shell command. |
 | **Log Explanation Engine** | Paste a raw terminal error log block to receive an SRE root-cause analysis, explanation, and the exact script needed to resolve the crash. |
-| **Session Cache & Pagination** | Caches repository metadata inside `sessionStorage` to prevent GitHub API rate limits. Grid views are paginated to 6 items per page for clean navigation. |
+| **Session Cache & Pagination** | Caches repository metadata and run lists inside `sessionStorage` to prevent GitHub API rate limits. Dashboard grids paginate repos; Actions runs use Load more for older executions. |
 
 ---
 
@@ -69,10 +72,26 @@ To connect to the local FastAPI backend and execute live AI audits against your 
 
 ShipStack is composed of four decoupled, easily maintainable layers:
 
-1.  **Client (React + Vite)**: A single-page application. Features a dark-mode glassmorphic theme styled with Tailwind CSS, high-fidelity micro-interactions by Framer Motion, and client-side routing.
-2.  **API Gateway (FastAPI)**: An async Python backend. Routes requests, validates schemas, reads GitHub repository file structures, and coordinates dependency checks against npm and PyPI registries.
-3.  **AI Orchestration**: Runs LLM analysis prompts (SRE insights, workflow audit, and log diagnostics) using a prioritized, multi-provider provider chain with automated retries.
+1.  **Client (React + Vite)**: A single-page application. Features a dark-mode glassmorphic theme styled with Tailwind CSS, high-fidelity micro-interactions by Framer Motion, and client-side routing (dashboard, static analyze, and Actions runs).
+2.  **API Gateway (FastAPI)**: An async Python backend. Routes requests, validates schemas, reads GitHub repository file structures, lists Actions workflow runs/jobs/logs, and coordinates dependency checks against npm and PyPI registries.
+3.  **AI Orchestration**: Runs LLM analysis prompts (SRE insights, workflow audit, pasted-log diagnostics, and **correlated Actions run diagnosis**) using a prioritized, multi-provider chain with automated retries.
 4.  **Database (MongoDB)**: Used to persist user credentials, OAuth access tokens, and activity panel history.
+
+For a deep walkthrough of the Actions Run Analysis feature (files, design choices, edge cases, interview Q&A), see [**ACTIONS_RUN_ANALYSIS.md**](./ACTIONS_RUN_ANALYSIS.md).
+
+---
+
+## How Actions Run Analysis works
+
+Static workflow audits catch misconfigurations in YAML. Runtime analysis answers a different question: **what actually failed on a completed run, and why — in the context of this repo.**
+
+1.  List recent runs via the GitHub Actions API (`per_page` + `page`, with Load more in the UI).
+2.  On select, fetch run detail and jobs/steps; only **completed** runs are analyzable.
+3.  Download logs for up to two failed/cancelled jobs (not every green job).
+4.  Deterministically extract error windows (head + regex error context + tail) instead of shipping raw multi-MB logs to the model.
+5.  Rebuild repository context at the run’s `head_sha`, run the same static analyzers, and ask the existing OpenRouter → HuggingFace chain for a correlated diagnosis (root cause, affected step, exact fix).
+
+Paste-log on the Analyze page remains available for ad-hoc terminal dumps without a run ID. `POST /api/analyze` is unchanged.
 
 ---
 
@@ -96,17 +115,19 @@ To prevent service interruptions due to API limits or provider downtime, ShipSta
 ```
 Github-Actions-Simulator/
 │
+├── ACTIONS_RUN_ANALYSIS.md             # Interview / deep-dive guide for Actions Run Analysis
 ├── client/                             # React frontend application
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── analyze/                # Results widgets, insight cards, and fix lists
 │   │   │   │   ├── ScanningScreen.jsx  # Pulsing quantum waiting screen
 │   │   │   │   └── FixList.jsx         # Accordion fixes with priority bars
+│   │   │   ├── runs/                   # Actions run list, report, and job/step panels
 │   │   │   ├── dashboard/              # Workspace layouts and repo cards
 │   │   │   │   └── RepoPreviewModal.jsx# Repository profile overlays
 │   │   │   └── landing/                # Marketing/landing hero components
 │   │   │
-│   │   ├── pages/                      # Page layouts (AnalyzePage, DashboardPage)
+│   │   ├── pages/                      # AnalyzePage, DashboardPage, RunsPage
 │   │   ├── lib/                        # API clients and projectDetect stack checks
 │   │   └── index.css                   # Custom radar and scanline keyframe styles
 │   │
@@ -117,12 +138,13 @@ Github-Actions-Simulator/
     ├── app/
     │   ├── ai/                         # AI Client fallback loops and prompts
     │   │   ├── client.py               # Provider orchestration (OpenRouter + HF)
-    │   │   ├── prompts.py              # System SRE review prompts
+    │   │   ├── prompts.py              # System SRE + run-diagnosis prompts
     │   │   └── sanitize.py             # JSON parser and control character scrubbers
     │   │
     │   ├── analyzers/                  # Local scanners (dependencies, workflows)
-    │   ├── engines/                    # Payload builders and insight aggregators
-    │   ├── routers/                    # Endpoint routers (analyze, auth, github)
+    │   ├── engines/                    # Insights, log extract, and run_engine orchestration
+    │   ├── services/                   # GitHub contents + Actions REST helpers
+    │   ├── routers/                    # analyze, auth, github (incl. actions/runs)
     │   └── config.py                   # Pydantic Settings configuration variables
     │
     ├── main.py                         # Backend runner entrypoint
@@ -206,9 +228,12 @@ Building this codebase required balancing API rate constraints against the depth
 *   **Sending full source files to the AI**: The first version sent entire files (like large workflow YAMLs and complete dependency manifests) to the LLM. In repositories with multiple workflows, this quickly hit OpenRouter's token output budget, resulting in truncated, invalid JSON responses (`finish_reason='length'`). I resolved this by capping the total input payload size to 50K characters, trimming individual file samples to a maximum of 2,000 characters, and reducing the requested output volume to 5 insights and 6 fixes.
 *   **Strict JSON decoding**: Free frontier models like Poolside sometimes generate JSON containing raw control characters (such as literal newlines `\n` or vertical-tabs `\x0b` inside string values). Standard python `json.loads` throws errors in strict mode. I implemented a pre-parsing sanitization function (`_sanitize_for_json`) to strip control codes and switched to `strict=False` when calling `json.loads`.
 *   **Constant API background sync**: At first, the dashboard fetched fresh repository profiles from GitHub on every mount. This caused visible loading delays and rapidly consumed the user's GitHub API rate limit. I moved to a `sessionStorage` caching mechanism. The repositories load instantly, and the user can click "Refresh" to explicitly bust the cache when needed.
+*   **Dumping full Actions job logs into the LLM**: Runtime diagnosis looked tempting as “just send the log.” Full job archives are huge, noisy, and blow free-tier context windows. I switched to deterministic extraction (head + error windows + tail), authoritative failed-step data from the Jobs API, and a single correlated prompt that also includes static analyzer findings and the matching workflow YAML.
+*   **Treating `owner/repo` as separate fields without parsing them**: An early Actions list call hit `/repos/undefined/undefined/...` because the client parser only returned `full_name`. Fixed by returning `owner` and `repo` explicitly and guarding the API client.
 
 **What I'd build with more time:**
 
 1.  **Background Worker Task Queue**: Auditing large configurations can take 15–30 seconds. Running this directly inside the FastAPI request thread holds open worker processes. Migrating task runs to a Redis worker queue (e.g. Celery or RQ) would allow the API gateway to scale independently.
 2.  **Vector database (RAG) CVE matching**: Instead of relying solely on the LLM's static weights for outdated package security warnings, querying a vector store indexed with active GitHub Advisory databases would guarantee precise CVE disclosures.
 3.  **Local dockerized worker execution**: Allowing developers to simulate the workflow actions inside a local Docker container (using libraries like `act`) to inspect steps before committing.
+4.  **Actions webhooks + persisted run history**: Subscribe to `workflow_run` events and store diagnoses in Mongo so teams can revisit failures without re-hitting GitHub or the LLM.
